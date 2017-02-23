@@ -693,14 +693,12 @@ void XGpioPs_IntrHandler(XGpioPs *InstancePtr)
 
 	for (Bank = 0U; Bank < InstancePtr->MaxBanks; Bank++) {
 		IntrStatus = XGpioPs_IntrGetStatus(InstancePtr, Bank);
-		if (IntrStatus != (u32)0) {
-			IntrEnabled = XGpioPs_IntrGetEnabled(InstancePtr,
-							      Bank);
-			XGpioPs_IntrClear((XGpioPs *)InstancePtr, Bank,
-							(IntrStatus & IntrEnabled));
-			InstancePtr->Handler(InstancePtr->
-					     CallBackRef, Bank,
-					     (IntrStatus & IntrEnabled));
+		IntrEnabled = XGpioPs_IntrGetEnabled(InstancePtr, Bank);
+		if ((IntrStatus & IntrEnabled) != (u32) 0) {
+			XGpioPs_IntrClear((XGpioPs *) InstancePtr, Bank,
+					(IntrStatus & IntrEnabled));
+			InstancePtr->Handler(InstancePtr->CallBackRef, Bank,
+					(IntrStatus & IntrEnabled));
 		}
 	}
 }
