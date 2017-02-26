@@ -15,9 +15,9 @@
 /* Module includes */
 #include "leg.h"
 #include "interrupt.h"
-#include "MPU6050/MPU6050_6Axis_MotionApps20.h"
+#include "MPU6050/imu.h"
 
-#include "test.h"
+#include "testApp.h"
 
 MPU6050 mpu;
 //MPU6050 mpu(0x69); // <-- use for AD0 high
