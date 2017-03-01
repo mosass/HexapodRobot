@@ -9,6 +9,97 @@
 #include "qcycle.h"
 #include "interrupt.h"
 #include "i2c.h"
+#include "imu.h"
+
+volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
+void dmpDataReady(XGpioPs* cbRef, u32 bank, u32 status) {
+    mpuInterrupt = true;
+}
+
+void prinfloat(float fval){
+	int whole = fval;
+	int thousandths = (fval - whole) * 1000;
+	thousandths = thousandths > 0 ? thousandths : -thousandths;
+	xil_printf("%d.%3d", whole, thousandths);
+}
+
+void testIMU() {
+	int intrPin = 12;
+	MPU6050 mpuTest;
+	uint8_t fifoBuffer[64];
+	// orientation/motion vars
+	Quaternion q;           // [w, x, y, z]         quaternion container
+	VectorInt16 aa;         // [x, y, z]            accel sensor measurements
+	VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
+	VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
+	VectorFloat gravity;    // [x, y, z]            gravity vector
+	float euler[3];         // [psi, theta, phi]    Euler angle container
+	float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
+
+	int status;
+	ImuSetup(mpuTest, intrPin, dmpDataReady);
+
+	while (1) {
+		while (!mpuInterrupt) {
+			//
+		}
+		mpuInterrupt = false;
+		status = ImuReadFifoBuffer(mpuTest, fifoBuffer);
+		if (status == XST_SUCCESS) {
+			mpuTest.dmpGetQuaternion(&q, fifoBuffer);
+			mpuTest.dmpGetEuler(euler, &q);
+			mpuTest.dmpGetGravity(&gravity, &q);
+			mpuTest.dmpGetYawPitchRoll(ypr, &q, &gravity);
+			mpuTest.dmpGetAccel(&aa, fifoBuffer);
+			mpuTest.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+			mpuTest.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
+
+			xil_printf("quat: ");
+			prinfloat(q.w);
+			xil_printf(", ");
+			prinfloat(q.x);
+			xil_printf(", ");
+			prinfloat(q.y);
+			xil_printf(", ");
+			prinfloat(q.z);
+			xil_printf("\t\t");
+
+			xil_printf("euler: ");
+			prinfloat(euler[0] * 180 / M_PI);
+			xil_printf(", ");
+			prinfloat(euler[1] * 180 / M_PI);
+			xil_printf(", ");
+			prinfloat(euler[2] * 180 / M_PI);
+			xil_printf("\t\t");
+
+			xil_printf("ypr: ");
+			prinfloat(ypr[0] * 180 / M_PI);
+			xil_printf(", ");
+			prinfloat(ypr[1] * 180 / M_PI);
+			xil_printf(", ");
+			prinfloat(ypr[2] * 180 / M_PI);
+			xil_printf("\t\t");
+
+			xil_printf("areal: ");
+			prinfloat(aaReal.x);
+			xil_printf(", ");
+			prinfloat(aaReal.y);
+			xil_printf(", ");
+			prinfloat(aaReal.z);
+			xil_printf("\t\t");
+
+			xil_printf("aWorld: ");
+			prinfloat(aaWorld.x);
+			xil_printf(", ");
+			prinfloat(aaWorld.y);
+			xil_printf(", ");
+			prinfloat(aaWorld.z);
+			xil_printf("\r\n");
+		}
+	}
+
+	return;
+}
 
 void testIIC() {
 	xil_printf("Test IIC with DS1307RTC.\r\n");
