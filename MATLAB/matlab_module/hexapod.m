@@ -1,156 +1,145 @@
-classdef hexapod
+classdef hexapod < handle
     %HEXAPOD Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
-        % length of leg links
-        link_length = [4.5 6.5 6.5];
-        % link_offset = [-pi/2 atan(2/6) atan(2/6)-pi/2];
-        link_offset = [0 atan(2/6) -atan(2/6)+pi/2];
-        % link_offset = [0 0 0];
-        % body size
-        body = [15 30];
-        %COM Port
-        portname = 'COM6';
-        baudrate = 115200;
+    properties(Constant)
+        COXA = 7.5;
+        FEMUR = 5.6;
+        TIBIA = 7.5;
+        
+        LEG_BASE_X = 10;
+        LEG_BASE_Y = 5;
+        LEG_BASE_Z = hexapod.TIBIA;
+        
+        LEGS_BASE = [
+            hexapod.LEG_BASE_X      -hexapod.LEG_BASE_Y   hexapod.LEG_BASE_Z;
+                0                   -hexapod.LEG_BASE_Y   hexapod.LEG_BASE_Z;
+            -hexapod.LEG_BASE_X     -hexapod.LEG_BASE_Y   hexapod.LEG_BASE_Z;
+            hexapod.LEG_BASE_X      hexapod.LEG_BASE_Y    hexapod.LEG_BASE_Z;
+                0                   hexapod.LEG_BASE_Y    hexapod.LEG_BASE_Z;
+            -hexapod.LEG_BASE_X     hexapod.LEG_BASE_Y    hexapod.LEG_BASE_Z;
+        ];
     end
     
-    methods
-        function r = leg(obj)
-            L1 = obj.link_length(1);
-            L2 = obj.link_length(2);
-            L3 = obj.link_length(3);
+    properties
+        % Legs joint variable
+        jointsVar;
+        footTipsPos;
+        
+        zoffset;
+        
+        baseLegs;
+        legs;
+    end
+    
+    methods(Static)
+        function r = leg()
+            L1 = hexapod.COXA;
+            L2 = hexapod.FEMUR;
+            L3 = hexapod.TIBIA;
             % create the leg links based on DH parameters
             %                    theta   d     a  alpha
-            links(1) = Link([    0       0    L1    pi/2], 'standard');
-            links(2) = Link([    0       0    L2      0 ], 'standard');
-            links(3) = Link([    0       0    L3      0 ], 'standard');
+            links(1) = Link([    0       0    L1    pi/2]);
+            links(2) = Link([    0       0    L2      0 ]);
+            links(3) = Link([    0       0    L3      0 ]);
 
-            % now create a robot to represent a single leg
-            r = SerialLink(links, 'name', 'leg', ... 
-                 'offset', obj.link_offset);
+            r = SerialLink(links, 'name', 'leg', ...
+                'base', transl(0, 0, L3), ...
+                'offset', [0 0 -pi/2]);
         end
         
-        function r = legs4l(obj)
-            leg = obj.leg();
-            legs(1) = SerialLink(leg, 'name', 'leg1', 'base', transl(5, 0, 0)*trotz(-pi/2)*trotx(pi));
-            legs(2) = SerialLink(leg, 'name', 'leg2', 'base', transl(25, 0, 0)*trotz(-pi/2)*trotx(pi));
-            % legs(5) = SerialLink(leg, 'name', 'leg5', 'base', transl(15, 0, 0)*trotz(-pi/2)*trotx(pi));
-            legs(3) = SerialLink(leg, 'name', 'leg3', 'base', transl(5, 15, 0)*trotz(pi/2)*trotx(pi));
-            legs(4) = SerialLink(leg, 'name', 'leg4', 'base', transl(25, 15, 0)*trotz(pi/2)*trotx(pi));
-            % legs(6) = SerialLink(leg, 'name', 'leg6', 'base', transl(15, 15, 0)*trotz(pi/2)*trotx(pi));
-            
-            r = legs;
+        function r = initBody6l()
+            r_tmp(6,1) = SerialLink;
+            for i = 1:6
+                xb = hexapod.LEGS_BASE(i, 1);
+                yb = hexapod.LEGS_BASE(i, 2);
+                zb = hexapod.LEGS_BASE(i, 3);
+                
+                bl = Link([0 0 sqrt(xb^2 + yb^2) 0]);
+                if xb < 0
+                    bl.offset = pi + atan(yb/xb);
+                else
+                    bl.offset = atan(yb/xb);
+                end
+                r_tmp(i) = SerialLink(bl, ...
+                    'name', strcat('base', int2str(i)), ...
+                    'base', transl([0 0 zb]));
+                r_tmp(i).qlim(1,:) = [0 0];
+            end
+            r = r_tmp;
         end
         
-        function simulate4l(obj, qcycle, q_offset, n_round, q_res)
-            plotopt = {'noraise', 'nobase', 'noshadow', 'nowrist', 'nojaxes', 'delay', 0};
+        function r = initLegs6l()
+            r_tmp(6,1) = SerialLink;
+            for i = 1:6
+                xb = hexapod.LEGS_BASE(i, 1);
+                yb = hexapod.LEGS_BASE(i, 2);
+                offs = atan(xb/yb); 
+                L = hexapod.leg();
+                r_tmp(i) = SerialLink(L, ...
+                    'name', strcat('leg', int2str(i)), ...
+                    'offset', L.offset+[offs 0 0]);
+            end
+            r = r_tmp;
+        end
+        
+        function r = getTransl(tran3d, rot3d)
+            r = transl(tran3d) * trotx(rot3d(1)) ...
+                * troty(rot3d(2)) * trotz(rot3d(3));
+        end
+    end
+    
+	methods        
+        function obj = hexapod()
+            obj.zoffset = hexapod.LEG_BASE_Z;
+            obj.jointsVar = zeros(6,3);
+            obj.footTipsPos = zeros(6,3);
             
-            legs = obj.legs4l();
-            w = obj.body(1);
-            l = obj.body(2);
-
-            body_x = [0  l  l  0];
-            body_y = [0  0  w  w];
-            body_z = [0  0  0  0];
-
-            clf;
-            axis([-5 35 -10 30 -15 5]);
+            obj.legs = hexapod.initLegs6l();
+            obj.baseLegs = hexapod.initBody6l();
+            for i = 1:6
+                obj.baseLegs(i).base = hexapod.getTransl([0 0 obj.zoffset], [0 0 0]);
+                obj.legs(i).base = obj.baseLegs(i).fkine(0);
+                obj.footTipsPos(i, :) = tform2trvec(obj.legs(i).fkine(obj.jointsVar(i, :)));
+            end
+        end
+        
+        function setBodyTransl(obj, v6d)
+            v6d(3) = v6d(3) + obj.zoffset;
+            v6d(4:6) = deg2rad(v6d(4:6));
+            for i = 1:6
+                obj.baseLegs(i).base = hexapod.getTransl(v6d(1:3), v6d(4:6));
+            end
+            obj.updateLegsBase();
+        end
+        
+        function updateLegsBase(obj)
+            for i = 1:6
+                v_old = tform2trvec(obj.legs(i).fkine(obj.jointsVar(i,:)));
+                obj.legs(i).base = obj.baseLegs(i).fkine(0);
+                obj.jointsVar(i,:) = obj.legs(i).ikine(transl(v_old), [0 0 0], [1 1 1 0 0 0]);
+            end
+        end
+        
+        function plot(obj)
+            plotopt = {'nobase', 'nowrist', 'noname', ...
+                       'perspective', ...
+                       'noshading', 'floorlevel', 0};
             hold on
-            patch(body_x, body_y, body_z, 'FaceColor', 'r', 'FaceAlpha', 1)
-            for i=1:4
-                legs(i).plot(qcycle(1,:), plotopt{:});
+            axis([-30 30 -30 30 -5 20]);
+            for i = 1:6
+                obj.legs(i).plot(obj.jointsVar(i,:), plotopt{:});
+                obj.baseLegs(i).plot(0, plotopt{:});
             end
             hold off
-            
-            [M N] = size(qcycle);
-            
-            %A = Animate('walking');
-            for j=1:n_round
-                for i=1:q_res:M
-                    idx = [i i i i] + (q_offset.*[0 1 2 3]) - 1;
-                    idx = mod(idx, M) + 1;
-                    
-                    q1 = qcycle(idx(1), :);
-                    q2 = qcycle(idx(2), :);
-                    q3 = qcycle(idx(3), :);
-                    q4 = qcycle(idx(4), :);
-                    
-                    legs(1).animate(q1);
-                    legs(2).animate(q2);
-                    
-                    q3(1) = -q3(1);
-                    q4(1) = -q4(1);
-                    legs(3).animate(q3);
-                    legs(4).animate(q4);
-                    drawnow
-                    %A.add();
-                end
-            end
         end
         
-        function genArrayC(obj, qcycle, filename)
-            qcycle = rad2deg(qcycle) + 150;
-            [M N] = size(qcycle);
-            
-            fd = fopen(filename,'wt');
-            
-            fprintf(fd, 'float QCYCLE[%d][%d] = {', M, N);
-            for i = 1:M-1
-                fprintf(fd, '\n\t{%.9f,\t%.9f,\t%.9f},', qcycle(i, :));
+        function animate(obj)
+            for i = 1:6
+                obj.baseLegs(i).animate(0);
+                obj.legs(i).animate(obj.jointsVar(i,:));
             end
-            
-            fprintf(fd, '\n\t{%.9f,\t%.9f,\t%.9f}', qcycle(M, :));
-            fprintf(fd,'\n};\n');
-            fclose(fd);
-        end
-        
-        function [q, s] = q2pos4l(obj, qcycle, q_offset, dt)
-            qcycle = rad2deg(qcycle);
-            [M N] = size(qcycle);
-            q = [];
-            for i=1:M
-                idx = [i i i i] + (q_offset.*[0 1 2 3]) - 1;
-                idx = mod(idx, M) + 1;
-
-                q(i, :) = [
-                    qcycle(idx(1), :) ...
-                    qcycle(idx(2), :) ...
-                    qcycle(idx(3), :) ...
-                    qcycle(idx(4), :)
-                ];
-                % *(-1) for left-side legs
-                q(i, :) = q(i, :).*[1 1 1  1 1 1  -1 1 1  -1 1 1];
-            end
-            
-            [M N] = size(q);
-
-            shift_q = [q(2:M, :); q(1, :)];
-            dq = abs(q - shift_q);
-            
-            s = ceil((dq./dt)/0.666)+1;
-%             s = mod(s, 500);
-            q = 511 + round(q./0.29);
-        end
-        
-        function send_command(obj, q, s, dt, n_round, q_res)
-            FID = serial(obj.portname);
-            set(FID,'BaudRate', obj.baudrate);
-            fopen(FID);
-            
-            [M N] = size(q);
-            for k = 1:n_round
-                for j = 1:q_res:M
-                    for i = 1:N
-                        send_packet(FID, i, q(j, i), s(j, i));
-                        pause(dt);
-                    end
-                end
-            end
-            
-            fclose(FID);
-            delete(FID);
-            clear FID;
+            drawnow
         end
     end
 end
