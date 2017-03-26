@@ -45,7 +45,7 @@ classdef hexapod < handle
 
             r = SerialLink(links, 'name', 'leg', ...
                 'base', transl(0, 0, L3), ...
-                'offset', [0 0 -pi/2]);
+                'offset', [-pi/2 0 -pi/2]);
         end
         
         function r = initBody6l()
@@ -74,7 +74,7 @@ classdef hexapod < handle
             for i = 1:6
                 xb = hexapod.LEGS_BASE(i, 1);
                 yb = hexapod.LEGS_BASE(i, 2);
-                offs = atan(xb/yb); 
+                offs = atan(xb/yb) + pi/2; 
                 L = hexapod.leg();
                 r_tmp(i) = SerialLink(L, ...
                     'name', strcat('leg', int2str(i)), ...
@@ -123,7 +123,7 @@ classdef hexapod < handle
         
         function plot(obj)
             plotopt = {'nobase', 'nowrist', 'noname', ...
-                       'perspective', ...
+                       'delay', 0.1, ...
                        'noshading', 'floorlevel', 0};
             hold on
             axis([-30 30 -30 30 -5 20]);
@@ -136,11 +136,11 @@ classdef hexapod < handle
         
         function animate(obj)
             for i = 1:6
-                obj.baseLegs(i).animate(0);
                 obj.legs(i).animate(obj.jointsVar(i,:));
+                obj.baseLegs(i).animate(0);
             end
-            drawnow
         end
+   
     end
 end
 
