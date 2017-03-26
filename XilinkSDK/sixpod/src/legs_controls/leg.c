@@ -6,16 +6,96 @@
  */
 
 #include "leg.h"
+#include "math.h"
+
+LegConfig getLegConfig(int Id) {
+	LegConfig conf;
+	switch(Id) {
+	case 1:
+		conf.jointA = 1;
+	default:
+		return conf;
+	}
+}
 
 void LegInitial(Leg *leg, int Id) {
 	leg->legID = Id;
-	leg->jointA = (Id-1)*3 + 1;
-	leg->jointB = (Id-1)*3 + 2;
-	leg->jointC = (Id-1)*3 + 3;
+	float default_x = 0;
+	float default_y = 14;
+	float default_z = 0;
 
-	leg->inverseA = FALSE;
-	leg->inverseB = FALSE;
-	leg->inverseC = FALSE;
+	// for all legs.
+	leg->footTip.x = default_x;
+	leg->footTip.y = default_y;
+	leg->footTip.z = default_z;
+	leg->footTip.inverseX = FALSE;
+	leg->footTip.inverseY = FALSE;
+	leg->footTip.inverseZ = FALSE;
+
+	switch(Id) {
+	case 1:
+		leg->jointA = 10;
+		leg->jointB = 11;
+		leg->jointC = 12;
+
+		leg->inverseA = FALSE;
+		leg->inverseB = FALSE;
+		leg->inverseC = TRUE;
+		break;
+	case 2:
+		leg->jointA = 13;
+		leg->jointB = 14;
+		leg->jointC = 15;
+
+		leg->inverseA = FALSE;
+		leg->inverseB = FALSE;
+		leg->inverseC = TRUE;
+		break;
+	case 3:
+		leg->jointA = 16;
+		leg->jointB = 17;
+		leg->jointC = 18;
+
+		leg->inverseA = FALSE;
+		leg->inverseB = FALSE;
+		leg->inverseC = TRUE;
+		break;
+	case 4:
+		leg->jointA = 1;
+		leg->jointB = 2;
+		leg->jointC = 3;
+
+		leg->inverseA = TRUE;
+		leg->inverseB = TRUE;
+		leg->inverseC = FALSE;
+		break;
+	case 5:
+		leg->jointA = 4;
+		leg->jointB = 5;
+		leg->jointC = 6;
+
+		leg->inverseA = TRUE;
+		leg->inverseB = TRUE;
+		leg->inverseC = FALSE;
+		break;
+	case 6:
+		leg->jointA = 7;
+		leg->jointB = 8;
+		leg->jointC = 9;
+
+		leg->inverseA = TRUE;
+		leg->inverseB = TRUE;
+		leg->inverseC = FALSE;
+		break;
+	default:
+		leg->jointA = 1;
+		leg->jointB = 2;
+		leg->jointC = 3;
+
+		leg->inverseA = FALSE;
+		leg->inverseB = FALSE;
+		leg->inverseC = FALSE;
+	}
 
 	return;
 }
@@ -155,8 +235,28 @@ void LegTaskMovement(Leg *leg, float qcycle[][3], int length, int offset, float 
 	return;
 }
 
-float _diff(float A, float B){
-	if(A > B)
+Pos3DOF LegIk(FootTipPosition ft, float z_off) {
+	return LegIk(ft.x, ft.y, ft.z, z_off);
+}
+
+Pos3DOF LegIk(float x, float y, float z, float z_off){
+	float C = COXA;
+	float F = FEMUR;
+	float T = TIBIA;
+
+	Pos3DOF jvar;
+
+	jvar.jointA = 150.0 + RAD2DEG((atan(x/y)));
+	float L1 = sqrt(x*x + y*y);
+	float L = sqrt((L1 - C)*(L1 - C) + (z_off - z)*(z_off - z));
+	jvar.jointB = 150.0 + RAD2DEG(acos((F*F + L*L - T*T)/(2*L*F)) - atan((z_off - z)/(L1 - C)));
+	jvar.jointC = 90.0 + RAD2DEG(acos((T*T + F*F - L*L)/(2*T*F)) - M_PI_2);
+
+	return jvar;
+}
+
+float _diff(float A, float B) {
+	if (A > B)
 		return A - B;
 	else
 		return B - A;
