@@ -3,7 +3,7 @@
 	<name>sixpod</name>
 	<comment>Created by SDK v2016.4. sixpod__freertos823_bsp - ps7_cortexa9_0</comment>
 	<projects>
-		<project>sixpod__freertos823_bsp</project>
+		<project>sixpod_freertos823_bsp</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
