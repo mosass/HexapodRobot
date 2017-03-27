@@ -252,8 +252,6 @@ BEGIN LIBRARY
  PARAMETER LIBRARY_VER = 1.7
  PARAMETER PROC_INSTANCE = ps7_cortexa9_0
  PARAMETER api_mode = SOCKET_API
- PARAMETER dhcp_does_arp_check = true
- PARAMETER lwip_dhcp = true
 END
 
 
