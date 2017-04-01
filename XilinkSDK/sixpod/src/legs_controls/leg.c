@@ -28,6 +28,9 @@ void LegInitial(Leg *leg, int Id) {
 	leg->footTip.x = default_x;
 	leg->footTip.y = default_y;
 	leg->footTip.z = default_z;
+	leg->footTipTarget.x = default_x;
+	leg->footTipTarget.y = default_y;
+	leg->footTipTarget.z = default_z;
 	leg->footTip.inverseX = FALSE;
 	leg->footTip.inverseY = FALSE;
 	leg->footTip.inverseZ = FALSE;
@@ -163,29 +166,6 @@ void LegMoveToPositionWithDuration(Leg *leg, Pos3DOF targetPos, float sec) {
 	return;
 }
 
-//void LegTaskMovement(Leg *leg, float qcycle[][3], int length, float dt, int offset) {
-//	int k = offset;
-//	Pos3DOF targetPos;
-//
-//	targetPos.jointA = qcycle[k][0];
-//	targetPos.jointB = qcycle[k][1];
-//	targetPos.jointC = qcycle[k][2];
-//	LegMoveToPositionWithDuration(leg, targetPos, 2);
-//	sleep(2);
-//
-//	for(int i = 0; i < length; i++){
-//		k = k < (length - 1) ? k + 1: 0;
-//
-//		targetPos.jointA = qcycle[k][0];
-//		targetPos.jointB = qcycle[k][1];
-//		targetPos.jointC = qcycle[k][2];
-//
-//		LegMoveToPositionWithDuration(leg, targetPos, dt);
-//
-//		usleep(dt * 1000000);
-//	}
-//	return;
-//}
 
 void LegTaskMovement(Leg *leg, float qcycle[][3], int length, int offset, float dt, int round, int inv) {
 

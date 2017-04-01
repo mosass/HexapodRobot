@@ -5,15 +5,20 @@
  *      Author: Phanomphon Yotchon
  */
 /* Module includes */
+
+#define GEN_TEST_APP  1
+
+#if GEN_TEST_APP == 1
+
 #include "leg.h"
 #include "qcycle.h"
 #include "interrupt.h"
 #include "i2c.h"
 #include "imu.h"
 
-volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
-void dmpDataReady(XGpioPs* cbRef, u32 bank, u32 status) {
-    mpuInterrupt = true;
+volatile bool mpuInterruptTest = false;     // indicates whether MPU interrupt pin has gone high
+void dmpDataReadyTest(XGpioPs* cbRef, u32 bank, u32 status) {
+	mpuInterruptTest = true;
 }
 
 void prinfloat(float fval){
@@ -37,13 +42,13 @@ void testIMU() {
 	float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
 	int status;
-	ImuSetup(mpuTest, intrPin, dmpDataReady);
+	ImuSetup(mpuTest, intrPin, dmpDataReadyTest);
 
 	while (1) {
-		while (!mpuInterrupt) {
+		while (!mpuInterruptTest) {
 			//
 		}
-		mpuInterrupt = false;
+		mpuInterruptTest = false;
 		status = ImuReadFifoBuffer(mpuTest, fifoBuffer);
 		if (status == XST_SUCCESS) {
 			mpuTest.dmpGetQuaternion(&q, fifoBuffer);
@@ -162,3 +167,4 @@ void testLegModule() {
 	return;
 }
 
+#endif // GEN_TEST_APP == 1

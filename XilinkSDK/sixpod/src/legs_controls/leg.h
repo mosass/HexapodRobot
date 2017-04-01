@@ -29,9 +29,10 @@ typedef struct leg {
 	u8 jointA, jointB, jointC;
 	u8 inverseA, inverseB, inverseC;
 	FootTipPosition footTip;
+	FootTipPosition footTipTarget;
 } Leg, LegConfig;
 
-typedef struct vector3dof {
+typedef struct jointVar3 {
 	float jointA, jointB, jointC;
 } Pos3DOF, Speed3DOF;
 
