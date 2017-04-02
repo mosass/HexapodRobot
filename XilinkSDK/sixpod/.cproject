@@ -41,7 +41,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/platform}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/hexapod}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/hexapod_leg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/mpu6050}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/imu}&quot;"/>
 								</option>
 								<inputType id="xilinx.gnu.armv7.cxx.compiler.input.1930596188" name="C++ source files" superClass="xilinx.gnu.armv7.cxx.compiler.input"/>
 							</tool>

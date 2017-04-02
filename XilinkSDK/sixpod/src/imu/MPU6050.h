@@ -34,10 +34,10 @@ THE SOFTWARE.
 ===============================================
 */
 
+#include "I2Cdev.h"
+
 #ifndef _MPU6050_H_
 #define _MPU6050_H_
-
-#include "I2Cdev.h"
 
 // supporting link:  http://forum.arduino.cc/index.php?&topic=143444.msg1079517#msg1079517
 // also: http://forum.arduino.cc/index.php?&topic=141571.msg1062899#msg1062899s

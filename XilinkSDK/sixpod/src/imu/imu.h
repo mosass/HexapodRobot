@@ -2,15 +2,14 @@
  * imu.h
  *
  *  Created on: Feb 27, 2017
- *      Author: mosas
+ *      Author: Phanomphon Yotchon
  */
-
-
-#ifndef SRC_MPU6050_IMU_H_
-#define SRC_MPU6050_IMU_H_
 
 #include "interrupt.h"
 #include "MPU6050_6Axis_MotionApps20.h"
+
+#ifndef SRC_IMU_IMU_H_
+#define SRC_IMU_IMU_H_
 
 int ImuAutoCalibrateOffset(MPU6050& mpuInts, int16_t &off_acc_x,
 		int16_t &off_acc_y, int16_t &off_acc_z, int16_t &off_gyr_x,
@@ -187,4 +186,4 @@ int ImuReadFifoBuffer(MPU6050& mpuInts, u8 *fifoBuf){
 	return XST_FAILURE;
 }
 
-#endif /* SRC_MPU6050_IMU_H_ */
+#endif /* SRC_IMU_IMU_H_ */
