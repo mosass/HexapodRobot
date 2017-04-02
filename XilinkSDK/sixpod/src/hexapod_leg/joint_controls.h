@@ -5,7 +5,7 @@
  *      Author: Phanomphon Yotchon
  */
 
-#include "comm.h"
+#include "../hexapod_leg/comm.h"
 
 #ifndef SRC_LEGS_CONTROLS_JOINT_CONTROLS_H_
 #define SRC_LEGS_CONTROLS_JOINT_CONTROLS_H_

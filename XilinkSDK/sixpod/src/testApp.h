@@ -6,15 +6,13 @@
  */
 /* Module includes */
 
-#define GEN_TEST_APP  1
-
 #if GEN_TEST_APP == 1
 
-#include "leg.h"
+#include "hexapod_leg/leg.h"
 #include "qcycle.h"
 #include "interrupt.h"
 #include "i2c.h"
-#include "imu.h"
+#include <imu.h>
 
 volatile bool mpuInterruptTest = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReadyTest(XGpioPs* cbRef, u32 bank, u32 status) {
@@ -152,8 +150,15 @@ void testIntrModule() {
 }
 
 void testLegModule() {
+	FootTipPosition ft;
+	ft.inverseX = FALSE;
+	ft.inverseY = FALSE;
+	ft.inverseZ = FALSE;
+	ft.x = 0;
+	ft.y = 14;
+	ft.z = 0;
 	Leg leg;
-	LegInitial(&leg, 1);
+	LegInitial(&leg, 1, ft);
 
 	leg.inverseA = FALSE;
 	leg.inverseC = TRUE;

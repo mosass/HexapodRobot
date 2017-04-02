@@ -5,7 +5,7 @@
  *      Author: Phanomphon Yotchon
  */
 
-#include "comm.h"
+#include "../hexapod_leg/comm.h"
 
 
 XUartPs Uart_Ps;

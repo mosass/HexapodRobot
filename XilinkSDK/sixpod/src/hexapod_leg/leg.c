@@ -5,90 +5,79 @@
  *      Author: Phanomphon Yotchon
  */
 
-#include "leg.h"
-#include "math.h"
 
-LegConfig getLegConfig(int Id) {
-	LegConfig conf;
-	switch(Id) {
-	case 1:
-		conf.jointA = 1;
-	default:
-		return conf;
-	}
+#include "../hexapod_leg/leg.h"
+
+#define RAD2DEG(Q) 			((Q) / M_PI) * 180
+
+static float _diff(float A, float B) {
+	if (A > B)
+		return A - B;
+	else
+		return B - A;
 }
 
-void LegInitial(Leg *leg, int Id) {
+void LegInitial(Leg *leg, int Id, FootTipPosition ft) {
 	leg->legID = Id;
-	float default_x = 0;
-	float default_y = 14;
-	float default_z = 0;
 
 	// for all legs.
-	leg->footTip.x = default_x;
-	leg->footTip.y = default_y;
-	leg->footTip.z = default_z;
-	leg->footTipTarget.x = default_x;
-	leg->footTipTarget.y = default_y;
-	leg->footTipTarget.z = default_z;
-	leg->footTip.inverseX = FALSE;
-	leg->footTip.inverseY = FALSE;
-	leg->footTip.inverseZ = FALSE;
+	leg->footTip = ft;
+	leg->footTipTarget = ft;
 
 	switch(Id) {
 	case 1:
-		leg->jointA = 10;
-		leg->jointB = 11;
-		leg->jointC = 12;
+		leg->jointA = LEG1_ID_A;
+		leg->jointB = LEG1_ID_B;
+		leg->jointC = LEG1_ID_C;
 
-		leg->inverseA = FALSE;
-		leg->inverseB = FALSE;
-		leg->inverseC = TRUE;
+		leg->inverseA = LEG1_ID_INVA;
+		leg->inverseB = LEG1_ID_INVB;
+		leg->inverseC = LEG1_ID_INVC;
 		break;
 	case 2:
-		leg->jointA = 13;
-		leg->jointB = 14;
-		leg->jointC = 15;
+		leg->jointA = LEG2_ID_A;
+		leg->jointB = LEG2_ID_B;
+		leg->jointC = LEG2_ID_C;
 
-		leg->inverseA = FALSE;
-		leg->inverseB = FALSE;
-		leg->inverseC = TRUE;
+		leg->inverseA = LEG2_ID_INVA;
+		leg->inverseB = LEG2_ID_INVB;
+		leg->inverseC = LEG2_ID_INVC;
 		break;
 	case 3:
-		leg->jointA = 16;
-		leg->jointB = 17;
-		leg->jointC = 18;
+		leg->jointA = LEG3_ID_A;
+		leg->jointB = LEG3_ID_B;
+		leg->jointC = LEG3_ID_C;
 
-		leg->inverseA = FALSE;
-		leg->inverseB = FALSE;
-		leg->inverseC = TRUE;
+		leg->inverseA = LEG3_ID_INVA;
+		leg->inverseB = LEG3_ID_INVB;
+		leg->inverseC = LEG3_ID_INVC;
 		break;
 	case 4:
-		leg->jointA = 1;
-		leg->jointB = 2;
-		leg->jointC = 3;
+		leg->jointA = LEG4_ID_A;
+		leg->jointB = LEG4_ID_B;
+		leg->jointC = LEG4_ID_C;
 
-		leg->inverseA = TRUE;
-		leg->inverseB = TRUE;
-		leg->inverseC = FALSE;
+		leg->inverseA = LEG4_ID_INVA;
+		leg->inverseB = LEG4_ID_INVB;
+		leg->inverseC = LEG4_ID_INVC;
 		break;
 	case 5:
-		leg->jointA = 4;
-		leg->jointB = 5;
-		leg->jointC = 6;
+		leg->jointA = LEG5_ID_A;
+		leg->jointB = LEG5_ID_B;
+		leg->jointC = LEG5_ID_C;
 
-		leg->inverseA = TRUE;
-		leg->inverseB = TRUE;
-		leg->inverseC = FALSE;
+		leg->inverseA = LEG5_ID_INVA;
+		leg->inverseB = LEG5_ID_INVB;
+		leg->inverseC = LEG5_ID_INVC;
 		break;
 	case 6:
-		leg->jointA = 7;
-		leg->jointB = 8;
-		leg->jointC = 9;
+		leg->jointA = LEG6_ID_A;
+		leg->jointB = LEG6_ID_B;
+		leg->jointC = LEG6_ID_C;
 
-		leg->inverseA = TRUE;
-		leg->inverseB = TRUE;
-		leg->inverseC = FALSE;
+		leg->inverseA = LEG6_ID_INVA;
+		leg->inverseB = LEG6_ID_INVB;
+		leg->inverseC = LEG6_ID_INVC;
 		break;
 	default:
 		leg->jointA = 1;
@@ -233,11 +222,4 @@ Pos3DOF LegIk(float x, float y, float z, float z_off){
 	jvar.jointC = 90.0 + RAD2DEG(acos((T*T + F*F - L*L)/(2*T*F)) - M_PI_2);
 
 	return jvar;
-}
-
-float _diff(float A, float B) {
-	if (A > B)
-		return A - B;
-	else
-		return B - A;
 }
