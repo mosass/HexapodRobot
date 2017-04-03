@@ -5,7 +5,7 @@
  *      Author: Phanomphon Yotchon
  */
 
-#include "../hexapod_leg/joint_controls.h"
+#include "joint_controls.h"
 
 
 /**************************** Torque and Load function *******************************/

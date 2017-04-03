@@ -8,11 +8,10 @@
 
 #if GEN_TEST_APP == 1
 
-#include "hexapod_leg/leg.h"
-#include "qcycle.h"
+#include "leg.h"
 #include "interrupt.h"
 #include "i2c.h"
-#include <imu.h>
+#include "imu.h"
 
 volatile bool mpuInterruptTest = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReadyTest(XGpioPs* cbRef, u32 bank, u32 status) {
@@ -150,25 +149,34 @@ void testIntrModule() {
 }
 
 void testLegModule() {
-	FootTipPosition ft;
-	ft.inverseX = FALSE;
-	ft.inverseY = FALSE;
-	ft.inverseZ = FALSE;
-	ft.x = 0;
-	ft.y = 14;
-	ft.z = 0;
-	Leg leg;
-	LegInitial(&leg, 1, ft);
+	Leg L1(1);
+	Leg L2(2);
+	Leg L3(3);
+	Leg L4(4);
+	Leg L5(5);
+	Leg L6(6);
 
-	leg.inverseA = FALSE;
-	leg.inverseC = TRUE;
+	L1.zOffset = 7;
+	L2.zOffset = 7;
+	L3.zOffset = 7;
+	L4.zOffset = 7;
+	L5.zOffset = 7;
+	L6.zOffset = 7;
 
-	LegTaskMovement(&leg, QCYCLE, QCYCLE_LENGTH, 0, 0.01, 2, FALSE);
+	FootTip targetFt(-5, 14, 0);
+	L1.moveTo(targetFt, 2);
+	L2.moveTo(targetFt, 2);
+	L3.moveTo(targetFt, 2);
+	L4.moveTo(targetFt, 2);
+	L5.moveTo(targetFt, 2);
+	L6.moveTo(targetFt, 2);
 
-	leg.inverseA = FALSE;
+	while(1){
+		Link3d lp = L1.getPresentPosition();
 
-	LegTaskMovement(&leg, QCYCLE, QCYCLE_LENGTH, 0, 0.001, 2, TRUE);
-
+		xil_printf("%d %d %d\r\n", (int)lp.a, (int)lp.b, (int)lp.c);
+		sleep(1);
+	}
 	return;
 }
 

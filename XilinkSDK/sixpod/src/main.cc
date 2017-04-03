@@ -22,20 +22,21 @@
 #include "testApp.h"
 int main (void) {
 	xil_printf("Test\r\n");
-	testIMU();
+	testLegModule();
 	return XST_SUCCESS;
 }
 #elif GEN_TEST_APP == 0
 
 int main (void) {
 	xil_printf("Test\r\n");
-//	hexapodInitial();
-	xil_printf("Ok\r\n");
+	Link3d L1(5, 5, 5);
+	Link3d L2(10, 20, 30);
 
-	for(;;){
-//		hexapodReadIMU();
-	}
-//	testIMU();
+	Link3d L3 = -L2 + 6;
+	xil_printf("%d, %d, %d\r\n", (int)L1.a, (int)L1.b, (int)L1.c);
+	xil_printf("%d, %d, %d\r\n", (int)L2.a, (int)L2.b, (int)L2.c);
+	xil_printf("%d, %d, %d\r\n", (int)L3.a, (int)L3.b, (int)L3.c);
+
 	return XST_SUCCESS;
 }
 #endif //else if GEN_TEST_APP == 0

@@ -5,46 +5,37 @@
  *      Author: Phanomphon Yotchon
  */
 
+#include "leg_type.h"
+
 #ifndef SRC_HEXAPOD_LEG_LEG_H_
 #define SRC_HEXAPOD_LEG_LEG_H_
 
-#include "math.h"
-#include "sleep.h"
-#include "hexapod_config.h"
+class Leg {
+private:
+	uint8_t jointIdA;
+	uint8_t jointIdB;
+	uint8_t jointIdC;
 
-#include "../hexapod_leg/joint_controls.h"
+	FootTip footTipPos;
+	Link3d	linkPos;
+	Link3d	linkSpeed;
 
-typedef struct foot_tip_position {
-	u8 inverseX, inverseY, inverseZ;
-	float x;
-	float y;
-	float z;
-} FootTipPosition;
+	Link3d calcIk();
+	void move();
+public:
+	uint8_t id;
+	float zOffset;
+	bool invX;
+	bool invY;
+	bool invZ;
+	bool invA;
+	bool invB;
+	bool invC;
 
-typedef struct leg {
-	u8 legID;
-	u8 jointA, jointB, jointC;
-	u8 inverseA, inverseB, inverseC;
-	FootTipPosition footTip;
-	FootTipPosition footTipTarget;
-} Leg;
-
-typedef struct jointVar3 {
-	float jointA, jointB, jointC;
-} Pos3DOF, Speed3DOF;
-
-void LegInitial(Leg *leg, int Id, FootTipPosition ft);
-
-void LegSetPositionDeg(Leg *leg, Pos3DOF targetPos);
-Pos3DOF LegGetPresentPositionDeg(Leg *leg);
-
-void LegSetSpeedDeg(Leg *leg, Speed3DOF speed);
-
-void LegMoveToPositionWithDuration(Leg *leg, Pos3DOF targetPos, float sec);
-
-void LegTaskMovement(Leg *leg, float qcycle[][3], int length, int offset, float dt, int round, int inv);
-
-Pos3DOF LegIk(FootTipPosition ft, float z_off);
-Pos3DOF LegIk(float x, float y, float z, float z_off);
+	Leg(int Id);
+	Link3d getPresentPosition();
+	void moveTo(Link3d& targetJointPos, float in_sec);
+	void moveTo(FootTip& targetFootTipPos, float in_sec);
+};
 
 #endif /* SRC_HEXAPOD_LEG_LEG_H_ */
