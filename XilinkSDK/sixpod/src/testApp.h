@@ -12,6 +12,7 @@
 #include "interrupt.h"
 #include "i2c.h"
 #include "imu.h"
+#include "hexapod.h"
 
 void prinfloat(float fval){
 	int whole = fval;
@@ -23,38 +24,38 @@ void prinfloat(float fval){
 void testIMU() {
 	int status;
 	int intrPin = 12;
-	imu.setup(intrPin);
+	Imu.setup(intrPin);
 
 	while (1) {
-		while (!imu.available()) {
+		while (!Imu.available()) {
 //			xil_printf("Wait for intr\r\n");
 		}
-		status = imu.readFifoBuffer();
 		if (status == XST_SUCCESS) {
+			status = Imu.readFifoBuffer();
 			xil_printf("quat: ");
-			prinfloat(imu.quat.w);
+			prinfloat(Imu.quat.w);
 			xil_printf(", ");
-			prinfloat(imu.quat.x);
+			prinfloat(Imu.quat.x);
 			xil_printf(", ");
-			prinfloat(imu.quat.y);
+			prinfloat(Imu.quat.y);
 			xil_printf(", ");
-			prinfloat(imu.quat.z);
+			prinfloat(Imu.quat.z);
 			xil_printf("\t\t");
 
 			xil_printf("euler: ");
-			prinfloat(imu.euler[0] * 180 / M_PI);
+			prinfloat(Imu.euler[0] * 180 / M_PI);
 			xil_printf(", ");
-			prinfloat(imu.euler[1] * 180 / M_PI);
+			prinfloat(Imu.euler[1] * 180 / M_PI);
 			xil_printf(", ");
-			prinfloat(imu.euler[2] * 180 / M_PI);
+			prinfloat(Imu.euler[2] * 180 / M_PI);
 			xil_printf("\t\t");
 
 			xil_printf("ypr: ");
-			prinfloat(imu.ypr[0] * 180 / M_PI);
+			prinfloat(Imu.ypr[0] * 180 / M_PI);
 			xil_printf(", ");
-			prinfloat(imu.ypr[1] * 180 / M_PI);
+			prinfloat(Imu.ypr[1] * 180 / M_PI);
 			xil_printf(", ");
-			prinfloat(imu.ypr[2] * 180 / M_PI);
+			prinfloat(Imu.ypr[2] * 180 / M_PI);
 			xil_printf("\r\n");
 		}
 	}
@@ -108,30 +109,18 @@ void testIntrModule() {
 }
 
 void testLegModule() {
-	Leg L1(1);
-	Leg L2(2);
-	Leg L3(3);
-	Leg L4(4);
-	Leg L5(5);
-	Leg L6(6);
-
-	L1.zOffset = 7;
-	L2.zOffset = 7;
-	L3.zOffset = 7;
-	L4.zOffset = 7;
-	L5.zOffset = 7;
-	L6.zOffset = 7;
-
+	Leg L[6];
+	float z_off = 7;
+	float in_sec = 2;
 	FootTip targetFt(-5, 14, 0);
-	L1.moveTo(targetFt, 2);
-	L2.moveTo(targetFt, 2);
-	L3.moveTo(targetFt, 2);
-	L4.moveTo(targetFt, 2);
-	L5.moveTo(targetFt, 2);
-	L6.moveTo(targetFt, 2);
+
+	for(int i = 0; i < 6; i++){
+		L[i].setup(i+1, z_off);
+		L[i].moveTo(targetFt, in_sec);
+	}
 
 	while(1){
-		Link3d lp = L1.getPresentPosition();
+		Link3d lp = L[0].getPresentPosition();
 
 		xil_printf("%d %d %d\r\n", (int)lp.a, (int)lp.b, (int)lp.c);
 		sleep(1);

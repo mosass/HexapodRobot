@@ -9,13 +9,13 @@
 #include "imu.h"
 #include "interrupt.h"
 
-volatile bool MpuIntrFlag;     // indicates whether MPU interrupt pin has gone high
+static volatile bool MpuIntrFlag;     // indicates whether MPU interrupt pin has gone high
 
-void dmpDataReady(XGpioPs* cbRef, u32 bank, u32 status) {
+static void dmpDataReady(XGpioPs* cbRef, u32 bank, u32 status) {
 	MpuIntrFlag = true;
 }
 
-MPU6050 mpuInts;
+static MPU6050 mpuInts;
 
 IMU::IMU(){
 	MpuIntrFlag = false;

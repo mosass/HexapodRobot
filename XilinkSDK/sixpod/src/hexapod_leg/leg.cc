@@ -16,12 +16,13 @@ inline float toDeg(float rad){
 	return ((rad) / M_PI) * 180;
 }
 
-Leg::Leg(int Id = 0){
+void Leg::setup(int Id = 0, float z_off = 0){
 	this->id = Id;
-	this->footTipPos = FootTip();
+//	this->footTipPos = FootTip();
 	this->invX = false;
 	this->invY = false;
 	this->invZ = false;
+	this->zOffset = z_off;
 
 	switch(Id){
 	case 1:

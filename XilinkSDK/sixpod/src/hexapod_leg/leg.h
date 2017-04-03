@@ -32,7 +32,7 @@ public:
 	bool invB;
 	bool invC;
 
-	Leg(int Id);
+	void setup(int Id, float z_off);
 	Link3d getPresentPosition();
 	void moveTo(Link3d& targetJointPos, float in_sec);
 	void moveTo(FootTip& targetFootTipPos, float in_sec);

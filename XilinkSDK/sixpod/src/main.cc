@@ -17,7 +17,6 @@
 #include "sleep.h"
 #include "xstatus.h"
 
-
 #if GEN_TEST_APP == 1
 #include "testApp.h"
 int main (void) {
@@ -31,14 +30,11 @@ int main (void) {
 #include "hexapod.h"
 
 int main (void) {
-	xil_printf("Test\r\n");
-	Link3d L1(5, 5, 5);
-	Link3d L2(10, 20, 30);
+	while(1){
+		xil_printf("Test\r\n");
+		sleep(1);
+	}
 
-	Link3d L3 = -L2 + 6;
-	xil_printf("%d, %d, %d\r\n", (int)L1.a, (int)L1.b, (int)L1.c);
-	xil_printf("%d, %d, %d\r\n", (int)L2.a, (int)L2.b, (int)L2.c);
-	xil_printf("%d, %d, %d\r\n", (int)L3.a, (int)L3.b, (int)L3.c);
 
 	return XST_SUCCESS;
 }

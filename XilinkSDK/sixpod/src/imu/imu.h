@@ -32,6 +32,6 @@ public:
 	bool available();
 };
 
-static IMU imu;
+static IMU Imu;
 
 #endif /* SRC_IMU_IMU_H_ */
