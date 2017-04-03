@@ -8,6 +8,8 @@
 #ifndef SRC_HEXAPOD_HEXAPOD_TYPE_H_
 #define SRC_HEXAPOD_HEXAPOD_TYPE_H_
 
+#include "math.h"
+
 class Rot3d {
 public:
 	float y;
@@ -18,6 +20,10 @@ public:
 		this->y = y;
 		this->p = p;
 		this->r = r;
+	}
+
+	static inline float toDeg(float rad){
+		return rad / M_PI * 180;
 	}
 
 	inline Rot3d diff(const Rot3d& R){

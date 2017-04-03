@@ -27,19 +27,29 @@ HEXAPOD::HEXAPOD(){
 		this->targetFootTip[i].x = INITIAL_FOOTTIP_X;
 		this->targetFootTip[i].y = INITIAL_FOOTTIP_Y;
 		this->targetFootTip[i].z = INITIAL_FOOTTIP_Z;
+
+		this->footTip[i].x = INITIAL_FOOTTIP_X;
+		this->footTip[i].y = INITIAL_FOOTTIP_Y;
+		this->footTip[i].z = INITIAL_FOOTTIP_Z;
 	}
+	bodyRotTarget.y = 0;
+	bodyRotTarget.p = 0;
+	bodyRotTarget.r = 0;
 	Imu.setup(MPU_INTR_PIN);
 }
 
 void HEXAPOD::begin(){
 	int status;
-	float setup_time = 2.0;
+	float setup_time = SETUP_TIME;
 	for(int i = 0; i < 6; i++){
 		this->leg[i].moveTo(this->targetFootTip[i], setup_time);
 	}
 	sleep(3);
 	for(int cntloop = 0; cntloop < 2000; ){
 		while (!Imu.available());
+		xil_printf(".");
+		if(cntloop % 100 == 0)
+			xil_printf("\r\n");
 		status = Imu.readFifoBuffer();
 		if (status == XST_SUCCESS) {
 			cntloop++;
@@ -50,7 +60,7 @@ void HEXAPOD::begin(){
 	bodyRotOffset.r = Imu.euler[2];
 }
 
-void HEXAPOD::readIMU(){
+bool HEXAPOD::readIMU(){
 	if (Imu.available()){
 		int status = Imu.readFifoBuffer();
 		if (status == XST_SUCCESS) {
@@ -60,8 +70,11 @@ void HEXAPOD::readIMU(){
 
 			bodyRot = bodyRot - bodyRotOffset;
 			logBodyRot();
+			return true;
 		}
 	}
+
+	return false;
 }
 
 void HEXAPOD::logBodyRot(){
@@ -76,4 +89,88 @@ void HEXAPOD::logBodyRot(){
 	print_float(bodyRotOffset.r);
 
 	xil_printf("\r\n");
+}
+
+bool HEXAPOD::balance(){
+	float x, y, z;
+	float s_ye = sin(bodyRotTarget.y - bodyRot.y);
+	float s_pe = sin(bodyRotTarget.p - bodyRot.p);
+	float s_re = sin(bodyRotTarget.r - bodyRot.r);
+
+	Rot3d error = bodyRot.diff(bodyRotTarget);
+
+	if(Rot3d::toDeg(error.y) < ALLOW_ROT_ERROR){
+		s_ye = 0;
+	}
+
+	if(Rot3d::toDeg(error.p) < ALLOW_ROT_ERROR){
+		s_pe = 0;
+	}
+
+	if(Rot3d::toDeg(error.r) < ALLOW_ROT_ERROR){
+		s_re = 0;
+	}
+
+	if(s_ye != 0 && s_pe != 0 && s_re != 0){
+		return false;
+	}
+
+	//leg 1
+	x = footTip[0].x;
+	y = footTip[0].y;
+	z = footTip[0].z;
+	footTip[0].x = x - (H_YBODY + y)*s_ye - z*s_pe;
+	footTip[0].y = y + (H_XBODY + x)*s_ye + z*s_re;
+	footTip[0].z = z - (H_XBODY + x)*s_pe + (H_YBODY + y)*s_re;
+
+	//leg 2
+	x = footTip[1].x;
+	y = footTip[1].y;
+	z = footTip[1].z;
+	footTip[1].x = x - (H_YBODY + y)*s_ye - z*s_pe;
+	footTip[1].y = y + (x)*s_ye + z*s_re;
+	footTip[1].z = z + (H_YBODY + y)*s_re;
+
+	//leg 3
+	x = footTip[2].x;
+	y = footTip[2].y;
+	z = footTip[2].z;
+	footTip[2].x = x - (H_YBODY + y)*s_ye - z*s_pe;
+	footTip[2].y = y - (H_XBODY - x)*s_ye + z*s_re;
+	footTip[2].z = z + (H_XBODY - x)*s_pe + (H_YBODY + y)*s_re;
+
+	//leg 4
+	x = footTip[3].x;
+	y = footTip[3].y;
+	z = footTip[3].z;
+	footTip[3].x = x + (H_YBODY + y)*s_ye - z*s_pe;
+	footTip[3].y = y - (H_XBODY + x)*s_ye - z*s_re;
+	footTip[3].z = z - (H_XBODY + x)*s_pe - (H_YBODY + y)*s_re;
+
+	//leg 5
+	x = footTip[4].x;
+	y = footTip[4].y;
+	z = footTip[4].z;
+	footTip[4].x = x + (H_YBODY + y)*s_ye - z*s_pe;
+	footTip[4].y = y - (x)*s_ye - z*s_re;
+	footTip[4].z = z - (H_YBODY + y)*s_re;
+
+	//leg 6
+	x = footTip[5].x;
+	y = footTip[5].y;
+	z = footTip[5].z;
+	footTip[5].x = x + (H_YBODY + y)*s_ye - z*s_pe;
+	footTip[5].y = y + (H_XBODY - x)*s_ye - z*s_re;
+	footTip[5].z = z + (H_XBODY - x)*s_pe - (H_YBODY + y)*s_re;
+
+	return true;
+}
+
+void HEXAPOD::moving(){
+	float time_step = TIME_STEP;
+	for(int i = 0; i < 6; i++){
+		this->leg[i].moveTo(this->footTip[i], time_step);
+	}
+	usleep(TIME_STEP * 1000 * 1000);
+	return;
 }

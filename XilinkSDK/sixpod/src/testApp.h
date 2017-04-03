@@ -24,7 +24,10 @@ void prinfloat(float fval){
 void testHexapod(){
 	Hexapod.begin();
 	while(1){
-		Hexapod.readIMU();
+		if(Hexapod.readIMU()){
+			if(Hexapod.balance())
+				Hexapod.moving();
+		}
 	}
 }
 

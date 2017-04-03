@@ -20,14 +20,18 @@ private:
 
 public:
 	Leg leg[6];
+	FootTip footTip[6];
 	FootTip targetFootTip[6];
 	Rot3d bodyRot;
 	Rot3d bodyRotOffset;
+	Rot3d bodyRotTarget;
 
 	HEXAPOD();
 	void begin();
-	void readIMU();
+	bool readIMU();
 	void logBodyRot();
+	bool balance();
+	void moving();
 };
 
 static HEXAPOD Hexapod;
