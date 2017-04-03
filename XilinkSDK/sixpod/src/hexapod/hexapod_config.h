@@ -68,6 +68,12 @@
 #define LEG6_ID_INVB	true
 #define LEG6_ID_INVC	false
 
-
+/*
+ * Hexapod configuration.
+ */
+#define INITIAL_FOOTTIP_X		0
+#define INITIAL_FOOTTIP_Y		14
+#define INITIAL_FOOTTIP_Z		0
+#define INITIAL_FOOTTIP_Z_OFF	7
 
 #endif /* SRC_HEXAPOD_CONFIG_H_ */

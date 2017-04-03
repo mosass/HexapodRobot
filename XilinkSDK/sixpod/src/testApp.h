@@ -21,6 +21,13 @@ void prinfloat(float fval){
 	xil_printf("%d.%3d", whole, thousandths);
 }
 
+void testHexapod(){
+	Hexapod.begin();
+	while(1){
+		Hexapod.readIMU();
+	}
+}
+
 void testIMU() {
 	int status;
 	int intrPin = 12;
@@ -30,8 +37,8 @@ void testIMU() {
 		while (!Imu.available()) {
 //			xil_printf("Wait for intr\r\n");
 		}
+		status = Imu.readFifoBuffer();
 		if (status == XST_SUCCESS) {
-			status = Imu.readFifoBuffer();
 			xil_printf("quat: ");
 			prinfloat(Imu.quat.w);
 			xil_printf(", ");

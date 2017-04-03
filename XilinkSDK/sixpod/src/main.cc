@@ -20,8 +20,8 @@
 #if GEN_TEST_APP == 1
 #include "testApp.h"
 int main (void) {
-	xil_printf("Test\r\n");
-	testIMU();
+	xil_printf("TestHexapod\r\n");
+	testHexapod();
 	return XST_SUCCESS;
 }
 #elif GEN_TEST_APP == 0
