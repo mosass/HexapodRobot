@@ -10,22 +10,25 @@
 #include "queue.h"
 #include "timers.h"
 /* Xilinx includes. */
+#include "stdint.h"
 #include "stdio.h"
 #include "xil_printf.h"
 #include "xparameters.h"
 #include "sleep.h"
 #include "xstatus.h"
-/* Module includes */
-#include "hexapod.h"
+
 
 #if GEN_TEST_APP == 1
 #include "testApp.h"
 int main (void) {
 	xil_printf("Test\r\n");
-	testLegModule();
+	testIMU();
 	return XST_SUCCESS;
 }
 #elif GEN_TEST_APP == 0
+
+/* Module includes */
+#include "hexapod.h"
 
 int main (void) {
 	xil_printf("Test\r\n");

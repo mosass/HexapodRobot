@@ -11,9 +11,41 @@
 #ifndef SRC_IMU_IMU_H_
 #define SRC_IMU_IMU_H_
 
-int ImuAutoCalibrateOffset(MPU6050& mpuInts, int16_t &off_acc_x,
+static volatile bool MpuIntrFlag;     // indicates whether MPU interrupt pin has gone high
+
+static void dmpDataReady(XGpioPs* cbRef, u32 bank, u32 status) {
+	MpuIntrFlag = true;
+}
+
+class IMU {
+public:
+	MPU6050 mpuInts;
+	uint8_t fifoBuffer[64];
+	Quaternion quat;           // [w, x, y, z]         quaternion container
+	VectorInt16 accel;         // [x, y, z]            accel sensor measurements
+	VectorInt16 accelReal;     // [x, y, z]            gravity-free accel sensor measurements
+	VectorInt16 accelWorld;    // [x, y, z]            world-frame accel sensor measurements
+	VectorFloat gravity;    // [x, y, z]            gravity vector
+	float euler[3];         // [psi, theta, phi]    Euler angle container
+	float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
+
+	IMU();
+
+	int autoCalibrateOffset(int16_t &off_acc_x,
+			int16_t &off_acc_y, int16_t &off_acc_z, int16_t &off_gyr_x,
+			int16_t &off_gyr_y, int16_t &off_gyr_z);
+	int setup (int intrPin);
+	int readFifoBuffer();
+
+};
+
+IMU::IMU(){
+	MpuIntrFlag = false;
+}
+
+int IMU::autoCalibrateOffset(int16_t &off_acc_x,
 		int16_t &off_acc_y, int16_t &off_acc_z, int16_t &off_gyr_x,
-		int16_t &off_gyr_y, int16_t &off_gyr_z) {
+		int16_t &off_gyr_y, int16_t &off_gyr_z){
 
 	int16_t acc_x, acc_y, acc_z;
 	int16_t gyr_x, gyr_y, gyr_z;
@@ -127,7 +159,7 @@ int ImuAutoCalibrateOffset(MPU6050& mpuInts, int16_t &off_acc_x,
 	}
 }
 
-int ImuSetup (MPU6050& mpuInts, int intrPin, void (*cb)(XGpioPs*, u32, u32)) {
+int IMU::setup (int intrPin){
 	int status;
 	int16_t ofs_acc_x, ofs_acc_y, ofs_acc_z;
 	int16_t ofs_gyr_x, ofs_gyr_y, ofs_gyr_z;
@@ -137,7 +169,7 @@ int ImuSetup (MPU6050& mpuInts, int intrPin, void (*cb)(XGpioPs*, u32, u32)) {
 		return XST_FAILURE;
 	}
 
-	if(ImuAutoCalibrateOffset(mpuInts, ofs_acc_x, ofs_acc_y, ofs_acc_z, ofs_gyr_x, ofs_gyr_y, ofs_gyr_z)){
+	if(autoCalibrateOffset(ofs_acc_x, ofs_acc_y, ofs_acc_z, ofs_gyr_x, ofs_gyr_y, ofs_gyr_z)){
 		return XST_FAILURE;
 	}
 
@@ -154,33 +186,43 @@ int ImuSetup (MPU6050& mpuInts, int intrPin, void (*cb)(XGpioPs*, u32, u32)) {
 
 	if(status == 0){
 		mpuInts.setDMPEnabled(true);
-		setupIntrSystem(intrPin, cb, INTR_TYPE_EDGE_RISING);
+		setupIntrSystem(intrPin, dmpDataReady, INTR_TYPE_EDGE_RISING);
 		enableIntr(intrPin);
 	} else {
 		return XST_FAILURE;
 	}
-
+	MpuIntrFlag = false;
 	return XST_SUCCESS;
 }
 
-int ImuReadFifoBuffer(MPU6050& mpuInts, u8 *fifoBuf){
+int IMU::readFifoBuffer() {
 	u8 mpuIntrStatus;
 	u16 fifoCount;
 	u16 packetSize = mpuInts.dmpGetFIFOPacketSize();
 
 	mpuIntrStatus = mpuInts.getIntStatus();
 	fifoCount = mpuInts.getFIFOCount();
-	if((mpuIntrStatus & 0x10) || fifoCount == 1024){
+	if ((mpuIntrStatus & 0x10) || fifoCount == 1024) {
 		// FIFO overflow!
 		mpuInts.resetFIFO();
 		return XST_FAILURE;
 	} else if (mpuIntrStatus & 0x02) {
-		while (fifoCount < packetSize){
+		while (fifoCount < packetSize) {
 			fifoCount = mpuInts.getFIFOCount();
 		}
 
-		mpuInts.getFIFOBytes(fifoBuf, packetSize);
+		mpuInts.getFIFOBytes(fifoBuffer, packetSize);
 		fifoCount -= packetSize;
+
+		mpuInts.dmpGetQuaternion(&quat, fifoBuffer);
+		mpuInts.dmpGetEuler(euler, &quat);
+		mpuInts.dmpGetGravity(&gravity, &quat);
+		mpuInts.dmpGetYawPitchRoll(ypr, &quat, &gravity);
+		mpuInts.dmpGetAccel(&accel, fifoBuffer);
+		mpuInts.dmpGetLinearAccel(&accelReal, &accel, &gravity);
+		mpuInts.dmpGetLinearAccelInWorld(&accelWorld, &accelReal, &quat);
+
+		MpuIntrFlag = false;
 		return XST_SUCCESS;
 	}
 	return XST_FAILURE;
