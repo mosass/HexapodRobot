@@ -23,12 +23,11 @@ void prinfloat(float fval){
 void testIMU() {
 	int status;
 	int intrPin = 12;
-	IMU imu;
 	imu.setup(intrPin);
 
 	while (1) {
-		while (!MpuIntrFlag) {
-			//
+		while (!imu.available()) {
+//			xil_printf("Wait for intr\r\n");
 		}
 		status = imu.readFifoBuffer();
 		if (status == XST_SUCCESS) {
