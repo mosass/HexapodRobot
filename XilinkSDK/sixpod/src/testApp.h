@@ -25,8 +25,10 @@ void testHexapod(){
 	Hexapod.begin();
 	while(1){
 		if(Hexapod.readIMU()){
-			if(Hexapod.balance())
+			if(Hexapod.balance()){
 				Hexapod.moving();
+				usleep(Hexapod.time_step * 1000 * 1000);
+			}
 		}
 	}
 }

@@ -76,8 +76,13 @@
 #define INITIAL_FOOTTIP_Z		0
 #define INITIAL_FOOTTIP_Z_OFF	7
 
+#define INITIAL_ROT_Y		0
+#define INITIAL_ROT_P		0
+#define INITIAL_ROT_R		0
+
+#define INITIAL_TIME_STEP		0.5	// sec
+
 #define ALLOW_ROT_ERROR 		1 	// +-deg
 #define SETUP_TIME				2   // sec
-#define TIME_STEP				0.5	// sec
 
 #endif /* SRC_HEXAPOD_CONFIG_H_ */

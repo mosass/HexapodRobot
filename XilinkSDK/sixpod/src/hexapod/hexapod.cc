@@ -32,9 +32,11 @@ HEXAPOD::HEXAPOD(){
 		this->footTip[i].y = INITIAL_FOOTTIP_Y;
 		this->footTip[i].z = INITIAL_FOOTTIP_Z;
 	}
-	bodyRotTarget.y = 0;
-	bodyRotTarget.p = 0;
-	bodyRotTarget.r = 0;
+	this->bodyRotTarget.y = INITIAL_ROT_Y;
+	this->bodyRotTarget.p = INITIAL_ROT_P;
+	this->bodyRotTarget.r = INITIAL_ROT_R;
+	this->time_step = INITIAL_TIME_STEP;
+
 	Imu.setup(MPU_INTR_PIN);
 }
 
@@ -167,10 +169,8 @@ bool HEXAPOD::balance(){
 }
 
 void HEXAPOD::moving(){
-	float time_step = TIME_STEP;
 	for(int i = 0; i < 6; i++){
-		this->leg[i].moveTo(this->footTip[i], time_step);
+		this->leg[i].moveTo(this->footTip[i], this->time_step);
 	}
-	usleep(TIME_STEP * 1000 * 1000);
 	return;
 }

@@ -26,6 +26,8 @@ public:
 	Rot3d bodyRotOffset;
 	Rot3d bodyRotTarget;
 
+	float time_step;
+
 	HEXAPOD();
 	void begin();
 	bool readIMU();
