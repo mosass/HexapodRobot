@@ -36,11 +36,10 @@ HEXAPOD::HEXAPOD(){
 	this->bodyRotTarget.p = INITIAL_ROT_P;
 	this->bodyRotTarget.r = INITIAL_ROT_R;
 	this->time_step = INITIAL_TIME_STEP;
-
-	Imu.setup(MPU_INTR_PIN);
 }
 
 void HEXAPOD::begin(){
+	Imu.setup(MPU_INTR_PIN);
 	int status;
 	float setup_time = SETUP_TIME;
 	for(int i = 0; i < 6; i++){

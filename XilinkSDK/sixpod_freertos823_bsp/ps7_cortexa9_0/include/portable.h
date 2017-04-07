@@ -203,4 +203,7 @@ void vPortEndScheduler( void ) PRIVILEGED_FUNCTION;
 }
 #endif
 
+
+void * prvGetInterruptControllerInstance();
+
 #endif /* PORTABLE_H */

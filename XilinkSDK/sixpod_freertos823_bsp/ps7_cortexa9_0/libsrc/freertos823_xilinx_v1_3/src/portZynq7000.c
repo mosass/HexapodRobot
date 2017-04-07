@@ -98,6 +98,11 @@ static XScuTimer xTimer;
 XScuGic xInterruptController; 	/* Interrupt controller instance */
 /*-----------------------------------------------------------*/
 
+void * prvGetInterruptControllerInstance ()
+{
+	return &xInterruptController;
+}
+
 void FreeRTOS_SetupTickInterrupt( void )
 {
 BaseType_t xStatus;
