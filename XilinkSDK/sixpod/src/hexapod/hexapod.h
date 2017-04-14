@@ -26,7 +26,12 @@ public:
 	Rot3d bodyRotOffset;
 	Rot3d bodyRotTarget;
 
-	float time_step;
+	bool improveYaw;
+	bool improvePitch;
+	bool improveRoll;
+
+	float stepTime;
+	float dt;
 
 	HEXAPOD();
 	void begin();

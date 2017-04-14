@@ -35,7 +35,13 @@ HEXAPOD::HEXAPOD(){
 	this->bodyRotTarget.y = INITIAL_ROT_Y;
 	this->bodyRotTarget.p = INITIAL_ROT_P;
 	this->bodyRotTarget.r = INITIAL_ROT_R;
-	this->time_step = INITIAL_TIME_STEP;
+
+	this->stepTime = INITIAL_STEP_TIME;
+	this->dt = INITIAL_DT;
+
+	this->improveYaw = true;
+	this->improvePitch = true;
+	this->improveRoll = true;
 }
 
 void HEXAPOD::begin(){
@@ -100,15 +106,15 @@ bool HEXAPOD::balance(){
 
 	Rot3d error = bodyRot.diff(bodyRotTarget);
 
-	if(Rot3d::toDeg(error.y) < ALLOW_ROT_ERROR){
+	if(Rot3d::toDeg(error.y) < ALLOW_ROT_ERROR || !this->improveYaw){
 		s_ye = 0;
 	}
 
-	if(Rot3d::toDeg(error.p) < ALLOW_ROT_ERROR){
+	if(Rot3d::toDeg(error.p) < ALLOW_ROT_ERROR || !this->improvePitch){
 		s_pe = 0;
 	}
 
-	if(Rot3d::toDeg(error.r) < ALLOW_ROT_ERROR){
+	if(Rot3d::toDeg(error.r) < ALLOW_ROT_ERROR || !this->improveRoll){
 		s_re = 0;
 	}
 
@@ -169,7 +175,7 @@ bool HEXAPOD::balance(){
 
 void HEXAPOD::moving(){
 	for(int i = 0; i < 6; i++){
-		this->leg[i].moveTo(this->footTip[i], this->time_step);
+		this->leg[i].moveTo(this->footTip[i], this->dt);
 	}
 	return;
 }
