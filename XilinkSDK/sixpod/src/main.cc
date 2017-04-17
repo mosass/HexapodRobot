@@ -29,90 +29,74 @@ int main (void) {
 /* Module includes */
 #include "hexapod.h"
 
-void prinfloat(float fval){
-	int whole = fval;
-	int thousandths = (fval - whole) * 1000;
-	thousandths = thousandths > 0 ? thousandths : -thousandths;
-	xil_printf("%d.%3d", whole, thousandths);
-}
+static QueueHandle_t xTrajQueue[6];
+static TaskHandle_t xInitTask;
 
-static void hexapodBalanceTask( void *pvParameters ){
-	const TickType_t xsecond = pdMS_TO_TICKS( 1000 );
-	vTaskDelay( xsecond );
-	int status;
-	int intrPin = 12;
-	Imu.setup(intrPin);
+HEXAPOD HexapodRobot;
 
-	while (1) {
-		while (!Imu.available()) {
-//			xil_printf("Wait for intr\r\n");
-		}
-		status = Imu.readFifoBuffer();
-		if (status == XST_SUCCESS) {
-			xil_printf("quat: ");
-			prinfloat(Imu.quat.w);
-			xil_printf(", ");
-			prinfloat(Imu.quat.x);
-			xil_printf(", ");
-			prinfloat(Imu.quat.y);
-			xil_printf(", ");
-			prinfloat(Imu.quat.z);
-			xil_printf("\t\t");
+/* Task function */
+#include "taskFunction.h"
 
-			xil_printf("euler: ");
-			prinfloat(Imu.euler[0] * 180 / M_PI);
-			xil_printf(", ");
-			prinfloat(Imu.euler[1] * 180 / M_PI);
-			xil_printf(", ");
-			prinfloat(Imu.euler[2] * 180 / M_PI);
-			xil_printf("\t\t");
-
-			xil_printf("ypr: ");
-			prinfloat(Imu.ypr[0] * 180 / M_PI);
-			xil_printf(", ");
-			prinfloat(Imu.ypr[1] * 180 / M_PI);
-			xil_printf(", ");
-			prinfloat(Imu.ypr[2] * 180 / M_PI);
-			xil_printf("\r\n");
-			vTaskDelay( xsecond );
-		}
-//		vTaskDelay( xsecond );
-	}
-}
-
-static void hexapodGaitTask( void *pvParameters ){
-	const TickType_t xsecond = pdMS_TO_TICKS( 2000 );
-	for(;;){
-		xil_printf("A\r\n");
-		vTaskDelay( xsecond );
-	}
-}
-
-static TaskHandle_t xBalanceTask;
-static TaskHandle_t xGaitTask;
+static void init( void * );
 
 int main (void) {
-	xil_printf("Test\r\n");
+	BaseType_t status;
 
-	xTaskCreate( hexapodBalanceTask, 					/* The function that implements the task. */
-				( const char * ) "Balance", 		/* Text name for the task, provided to assist debugging only. */
+	for(int i = 0; i < 6; i++){
+		xTrajQueue[i] = xQueueCreate( 20, sizeof( Trajectory3d ));
+	}
+
+	status = xTaskCreate( init, 			/* The function that implements the task. */
+				( const char * ) "init", 	/* Text name for the task, provided to assist debugging only. */
 				configMINIMAL_STACK_SIZE, 	/* The stack allocated to the task. */
 				NULL, 						/* The task parameter is not used, so set to NULL. */
 				tskIDLE_PRIORITY,			/* The task runs at the idle priority. */
-				&xBalanceTask );
+				&xInitTask );
 
-	xTaskCreate( hexapodGaitTask,
-				 ( const char * ) "Gait",
-				 configMINIMAL_STACK_SIZE,
-				 NULL,
-				 tskIDLE_PRIORITY,
-				 &xGaitTask );
+	if(status != pdPASS){
+		xil_printf("Can not create init task.");
+		return XST_FAILURE;
+	}
 
 	vTaskStartScheduler();
 
-	for( ;; );
-
 	return XST_SUCCESS;
 }
+
+static void init( void *pvParameters ) {
+	BaseType_t status;
+	TaskHandle_t xMovingTask;
+	TaskHandle_t xWalkingTask;
+
+	xil_printf("Initial\r\n");
+
+	status = xTaskCreate( hexapodMovingTask,
+				 ( const char * ) "Moving",
+				 configMINIMAL_STACK_SIZE,
+				 NULL,
+				 tskIDLE_PRIORITY + 4,
+				 &xMovingTask );
+
+	if(status != pdPASS){
+		xil_printf("Can not create Moving task.\r\n");
+	}
+
+	status = xTaskCreate( hexapodWalkingTask,
+				 ( const char * ) "Walking",
+				 configMINIMAL_STACK_SIZE,
+				 NULL,
+				 tskIDLE_PRIORITY,
+				 &xWalkingTask );
+
+	if(status != pdPASS){
+		xil_printf("Can not create Walking task.\r\n");
+	}
+
+	xil_printf("Initialed\r\n");
+	vTaskDelete(NULL);
+	for(;;);
+}
+
+
 #endif //else if GEN_TEST_APP == 0
 
