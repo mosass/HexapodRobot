@@ -95,7 +95,7 @@ static void init( void *pvParameters ) {
 				 configMINIMAL_STACK_SIZE,
 				 NULL,
 //				 tskIDLE_PRIORITY,
-				 DEFAULT_THREAD_PRIO - 1,
+				 DEFAULT_THREAD_PRIO,
 				 &xWalkingTask );
 
 	if(status != pdPASS){
@@ -106,7 +106,7 @@ static void init( void *pvParameters ) {
 				 ( const char * ) "Moving",
 				 configMINIMAL_STACK_SIZE,
 				 NULL,
-				 DEFAULT_THREAD_PRIO,
+				 DEFAULT_THREAD_PRIO + 1,
 				 &xMovingTask );
 
 	if(status != pdPASS){

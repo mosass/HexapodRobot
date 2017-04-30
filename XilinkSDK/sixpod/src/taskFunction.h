@@ -34,33 +34,24 @@ static void hexapodMovingTask( void *pvParameters ){
 	for(;;){
 		dt = pdMS_TO_TICKS( Hexapod.dt * 1000 );
 		if(Hexapod.readIMU()){
-//			if(Hexapod.improvePitch || Hexapod.improveRoll || Hexapod.improveYaw){
-//				xil_printf("B");
-//				// balance mode
-//				Hexapod.balance();
-//			}
-
-			xil_printf("M");
-			Hexapod.moving();
-
-			for(int i = 0; i < 6; i++){
-				xTaskNotifyGive(xLegGait[i]);
+			if(Hexapod.improvePitch || Hexapod.improveRoll || Hexapod.improveYaw){
+				xil_printf("B");
+				// balance mode
+				Hexapod.balance();
 			}
-			vTaskDelay( dt );
-
-//			for(int i = 0; i < 6; i++){
-//				ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
-//			}
 		}
+
+		xil_printf("M");
+		Hexapod.moving();
+
+		for(int i = 0; i < 6; i++){
+			xTaskNotifyGive(xLegGait[i]);
+		}
+		vTaskDelay( dt );
 	}
 }
 
 static void hexapodWalkingTask( void *pvParameters ){
-//	for(;;){
-//		TickType_t st = pdMS_TO_TICKS( Hexapod.stepTime * 1000 );
-//		vTaskDelay( st );
-//	}
-
 	const char * taskName[6] = {
 			"Leg1Gait",
 			"Leg2Gait",
@@ -79,12 +70,10 @@ static void hexapodWalkingTask( void *pvParameters ){
 
 	Trajectory3d tp1 = {-3, 14.0, 0, 0.5};
 	Trajectory3d tp2 = {0, 14.0, 2, 0.25};
-//	Trajectory3d tp3 = {0.5, 14.0, 2, 0.1};
 	Trajectory3d tp4 = {3, 14.0, 0, 0.25};
 
-	Hexapod.stepTime = 1;
-	Hexapod.dt = 0.5;
-//	Hexapod.bodyRotTarget.r = 0.2;
+	Hexapod.stepTime = 2;
+	Hexapod.dt = 0.1;
 
 	Trajectory3d tpf1 = {-3, 14.0, 0, 0.5};
 	xQueueSend(xTrajQueue[0], (void *)&tpf1, 0UL);
@@ -100,16 +89,11 @@ static void hexapodWalkingTask( void *pvParameters ){
 	vTaskDelay( stepTime );
 
 	for( ;; ){
-//		stepTime = pdMS_TO_TICKS( Hexapod.stepTime * 1000 * 2);
 		xil_printf("Gait\r\n");
 
 		xQueueSend(xTrajQueue[0], (void *)&tp2, 0UL);
 		xQueueSend(xTrajQueue[2], (void *)&tp2, 0UL);
 		xQueueSend(xTrajQueue[4], (void *)&tp2, 0UL);
-
-//		xQueueSend(xTrajQueue[0], (void *)&tp3, 0UL);
-//		xQueueSend(xTrajQueue[2], (void *)&tp3, 0UL);
-//		xQueueSend(xTrajQueue[4], (void *)&tp3, 0UL);
 
 		xQueueSend(xTrajQueue[0], (void *)&tp4, 0UL);
 		xQueueSend(xTrajQueue[2], (void *)&tp4, 0UL);
@@ -131,10 +115,6 @@ static void hexapodWalkingTask( void *pvParameters ){
 		xQueueSend(xTrajQueue[3], (void *)&tp2, 0UL);
 		xQueueSend(xTrajQueue[5], (void *)&tp2, 0UL);
 
-//		xQueueSend(xTrajQueue[1], (void *)&tp3, 0UL);
-//		xQueueSend(xTrajQueue[3], (void *)&tp3, 0UL);
-//		xQueueSend(xTrajQueue[5], (void *)&tp3, 0UL);
-
 		xQueueSend(xTrajQueue[1], (void *)&tp4, 0UL);
 		xQueueSend(xTrajQueue[3], (void *)&tp4, 0UL);
 		xQueueSend(xTrajQueue[5], (void *)&tp4, 0UL);
@@ -144,7 +124,6 @@ static void hexapodWalkingTask( void *pvParameters ){
 		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
 
 		xil_printf("Gaited\r\n");
-//		vTaskDelay( stepTime );
 	}
 }
 
@@ -172,11 +151,6 @@ static void hexapodLegGaitTask( void *pvParameters ){
 
 		// Interpolation round
 		for(int i = 0; i < cnt; i++){
-//			xil_printf("L%d{%d %d %d}\r\n", (uint32_t) pvParameters,
-//					(int) roundf(step_pos.x),
-//					(int) roundf(step_pos.y),
-//					(int) roundf(step_pos.z));
-
 			Hexapod.targetFootTip[id] = Hexapod.targetFootTip[id] + step_pos;
 
 			if(Hexapod.improvePitch || Hexapod.improveRoll || Hexapod.improveYaw){
@@ -191,18 +165,11 @@ static void hexapodLegGaitTask( void *pvParameters ){
 					(int) roundf(Hexapod.footTip[id].y),
 					(int) roundf(Hexapod.footTip[id].z));
 
-//			xTaskNotifyGive(xMovingTask);
-//			vTaskDelay( dt );
 			ulTaskNotifyTake( pdTRUE, portMAX_DELAY ); // Take from moving task
 		}
 
 		// The final round
-//		ulTaskNotifyTake( pdTRUE, portMAX_DELAY ); // Take from moving task
 		step_pos = new_pos - Hexapod.targetFootTip[id];
-//		xil_printf("L%d{%d %d %d}\r\n", (uint32_t) pvParameters,
-//							(int) roundf(step_pos.x),
-//							(int) roundf(step_pos.y),
-//							(int) roundf(step_pos.z));
 		Hexapod.targetFootTip[id] = new_pos;
 
 		if(Hexapod.improvePitch || Hexapod.improveRoll || Hexapod.improveYaw){
@@ -217,8 +184,6 @@ static void hexapodLegGaitTask( void *pvParameters ){
 							(int) roundf(Hexapod.footTip[id].y),
 							(int) roundf(Hexapod.footTip[id].z));
 
-
-//		xTaskNotifyGive(xMovingTask);
 		if(footDown){
 			TickType_t dt = pdMS_TO_TICKS( Hexapod.dt * 1000 );
 			vTaskDelay( dt );
