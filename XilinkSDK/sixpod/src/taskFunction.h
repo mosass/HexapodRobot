@@ -5,7 +5,10 @@
  *      Author: Phanomphon Yotchon
  */
 
-#if GEN_TEST_APP == 0
+#ifndef SRC_TASKFUNCTION_H_
+#define SRC_TASKFUNCTION_H_
+
+TickType_t stepTime;
 
 typedef struct trajectory3d {
 	float x;
@@ -30,22 +33,33 @@ static void hexapodMovingTask( void *pvParameters ){
 	TickType_t dt;
 	for(;;){
 		dt = pdMS_TO_TICKS( Hexapod.dt * 1000 );
-		if(Hexapod.improvePitch || Hexapod.improveRoll || Hexapod.improveYaw){
-			xil_printf("B");
-			// balance mode
-			Hexapod.balance();
+		if(Hexapod.readIMU()){
+//			if(Hexapod.improvePitch || Hexapod.improveRoll || Hexapod.improveYaw){
+//				xil_printf("B");
+//				// balance mode
+//				Hexapod.balance();
+//			}
+
+			xil_printf("M");
+			Hexapod.moving();
+
+			for(int i = 0; i < 6; i++){
+				xTaskNotifyGive(xLegGait[i]);
+			}
+			vTaskDelay( dt );
+
+//			for(int i = 0; i < 6; i++){
+//				ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+//			}
 		}
-		xil_printf("M");
-//		Hexapod.moving();
-		vTaskDelay( dt );
 	}
 }
 
 static void hexapodWalkingTask( void *pvParameters ){
-//	for(;;);
-	TickType_t stepTime;
-
-	TaskHandle_t xLegGait[6];
+//	for(;;){
+//		TickType_t st = pdMS_TO_TICKS( Hexapod.stepTime * 1000 );
+//		vTaskDelay( st );
+//	}
 
 	const char * taskName[6] = {
 			"Leg1Gait",
@@ -60,33 +74,92 @@ static void hexapodWalkingTask( void *pvParameters ){
 		xQueueReset(xTrajQueue[i]);
 		xTaskCreate( hexapodLegGaitTask,
 					taskName[i], configMINIMAL_STACK_SIZE,
-					(void *) i, tskIDLE_PRIORITY, &xLegGait[i] );
+					(void *) i, DEFAULT_THREAD_PRIO, &xLegGait[i] );
 	}
 
+	Trajectory3d tp1 = {-3, 14.0, 0, 0.5};
+	Trajectory3d tp2 = {0, 14.0, 2, 0.25};
+//	Trajectory3d tp3 = {0.5, 14.0, 2, 0.1};
+	Trajectory3d tp4 = {3, 14.0, 0, 0.25};
+
+	Hexapod.stepTime = 1;
+	Hexapod.dt = 0.5;
+//	Hexapod.bodyRotTarget.r = 0.2;
+
+	Trajectory3d tpf1 = {-3, 14.0, 0, 0.5};
+	xQueueSend(xTrajQueue[0], (void *)&tpf1, 0UL);
+	xQueueSend(xTrajQueue[2], (void *)&tpf1, 0UL);
+	xQueueSend(xTrajQueue[4], (void *)&tpf1, 0UL);
+
+	Trajectory3d tpf4 = {3, 14.0, 0, 0.5};
+	xQueueSend(xTrajQueue[1], (void *)&tpf4, 0UL);
+	xQueueSend(xTrajQueue[3], (void *)&tpf4, 0UL);
+	xQueueSend(xTrajQueue[5], (void *)&tpf4, 0UL);
+
+	stepTime = pdMS_TO_TICKS( Hexapod.stepTime * 1000 );
+	vTaskDelay( stepTime );
+
 	for( ;; ){
-		stepTime = pdMS_TO_TICKS( Hexapod.stepTime * 1000 );
+//		stepTime = pdMS_TO_TICKS( Hexapod.stepTime * 1000 * 2);
 		xil_printf("Gait\r\n");
 
-		for(int i = 0; i < 6; i++){
-			Trajectory3d tp = {(float)i, 14.0, 5.0, 0.5};
-			xQueueSend(xTrajQueue[i], (void *)&tp, 0UL);
-//			vTaskDelay( stepTime );
-		}
-		vTaskDelay( stepTime );
+		xQueueSend(xTrajQueue[0], (void *)&tp2, 0UL);
+		xQueueSend(xTrajQueue[2], (void *)&tp2, 0UL);
+		xQueueSend(xTrajQueue[4], (void *)&tp2, 0UL);
+
+//		xQueueSend(xTrajQueue[0], (void *)&tp3, 0UL);
+//		xQueueSend(xTrajQueue[2], (void *)&tp3, 0UL);
+//		xQueueSend(xTrajQueue[4], (void *)&tp3, 0UL);
+
+		xQueueSend(xTrajQueue[0], (void *)&tp4, 0UL);
+		xQueueSend(xTrajQueue[2], (void *)&tp4, 0UL);
+		xQueueSend(xTrajQueue[4], (void *)&tp4, 0UL);
+
+		xQueueSend(xTrajQueue[1], (void *)&tp1, 0UL);
+		xQueueSend(xTrajQueue[3], (void *)&tp1, 0UL);
+		xQueueSend(xTrajQueue[5], (void *)&tp1, 0UL);
+
+		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+
+		xQueueSend(xTrajQueue[0], (void *)&tp1, 0UL);
+		xQueueSend(xTrajQueue[2], (void *)&tp1, 0UL);
+		xQueueSend(xTrajQueue[4], (void *)&tp1, 0UL);
+
+		xQueueSend(xTrajQueue[1], (void *)&tp2, 0UL);
+		xQueueSend(xTrajQueue[3], (void *)&tp2, 0UL);
+		xQueueSend(xTrajQueue[5], (void *)&tp2, 0UL);
+
+//		xQueueSend(xTrajQueue[1], (void *)&tp3, 0UL);
+//		xQueueSend(xTrajQueue[3], (void *)&tp3, 0UL);
+//		xQueueSend(xTrajQueue[5], (void *)&tp3, 0UL);
+
+		xQueueSend(xTrajQueue[1], (void *)&tp4, 0UL);
+		xQueueSend(xTrajQueue[3], (void *)&tp4, 0UL);
+		xQueueSend(xTrajQueue[5], (void *)&tp4, 0UL);
+
+		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+
+		xil_printf("Gaited\r\n");
+//		vTaskDelay( stepTime );
 	}
 }
 
 static void hexapodLegGaitTask( void *pvParameters ){
-	TickType_t dt;
 	int id = (uint32_t) pvParameters;
-	xil_printf("{%d %d %d}\r\n", (int) roundf(Hexapod.footTip[id].x),
-								 (int) roundf(Hexapod.footTip[id].y),
-								 (int) roundf(Hexapod.footTip[id].z));
+	bool footDown = false;
+
 	for(;;){
 		Trajectory3d targetPos;
+
 		/* Wait without a timeout for data. */
 		xQueueReceive(xTrajQueue[id], (void *) &targetPos, portMAX_DELAY );
-		dt = pdMS_TO_TICKS( Hexapod.dt * 1000 );
+		if(Hexapod.targetFootTip[id].z > 0.0 && targetPos.z <= 0.0){
+			footDown = true;
+		}
 
 		float r = roundf(targetPos.duration * Hexapod.stepTime / Hexapod.dt) - 1;
 		int cnt = (int) r;
@@ -95,12 +168,15 @@ static void hexapodLegGaitTask( void *pvParameters ){
 		FootTip new_pos(targetPos.x, targetPos.y, targetPos.z);
 		FootTip step_pos = (new_pos - old_pos) / r;
 
+		ulTaskNotifyTake( pdTRUE, portMAX_DELAY ); // Take from moving task
+
 		// Interpolation round
 		for(int i = 0; i < cnt; i++){
-			xil_printf("L%d{%d %d %d}\r\n", (uint32_t) pvParameters,
-					(int) roundf(step_pos.x),
-					(int) roundf(step_pos.y),
-					(int) roundf(step_pos.z));
+//			xil_printf("L%d{%d %d %d}\r\n", (uint32_t) pvParameters,
+//					(int) roundf(step_pos.x),
+//					(int) roundf(step_pos.y),
+//					(int) roundf(step_pos.z));
+
 			Hexapod.targetFootTip[id] = Hexapod.targetFootTip[id] + step_pos;
 
 			if(Hexapod.improvePitch || Hexapod.improveRoll || Hexapod.improveYaw){
@@ -111,14 +187,22 @@ static void hexapodLegGaitTask( void *pvParameters ){
 				// fixed mode
 				Hexapod.footTip[id] = Hexapod.targetFootTip[id];
 			}
-			xil_printf("{%d %d %d}\r\n", (int) roundf(Hexapod.footTip[id].x),
+			xil_printf("L%d{%d %d %d}\r\n", id, (int) roundf(Hexapod.footTip[id].x),
 					(int) roundf(Hexapod.footTip[id].y),
 					(int) roundf(Hexapod.footTip[id].z));
-			vTaskDelay( dt );
+
+//			xTaskNotifyGive(xMovingTask);
+//			vTaskDelay( dt );
+			ulTaskNotifyTake( pdTRUE, portMAX_DELAY ); // Take from moving task
 		}
 
 		// The final round
+//		ulTaskNotifyTake( pdTRUE, portMAX_DELAY ); // Take from moving task
 		step_pos = new_pos - Hexapod.targetFootTip[id];
+//		xil_printf("L%d{%d %d %d}\r\n", (uint32_t) pvParameters,
+//							(int) roundf(step_pos.x),
+//							(int) roundf(step_pos.y),
+//							(int) roundf(step_pos.z));
 		Hexapod.targetFootTip[id] = new_pos;
 
 		if(Hexapod.improvePitch || Hexapod.improveRoll || Hexapod.improveYaw){
@@ -129,11 +213,20 @@ static void hexapodLegGaitTask( void *pvParameters ){
 			// fixed mode
 			Hexapod.footTip[id] = Hexapod.targetFootTip[id];
 		}
-		xil_printf("{%d %d %d}\r\n", (int) roundf(Hexapod.footTip[id].x),
+		xil_printf("L%d{%d %d %d}\r\n", id, (int) roundf(Hexapod.footTip[id].x),
 							(int) roundf(Hexapod.footTip[id].y),
 							(int) roundf(Hexapod.footTip[id].z));
-		vTaskDelay( dt );
+
+
+//		xTaskNotifyGive(xMovingTask);
+		if(footDown){
+			TickType_t dt = pdMS_TO_TICKS( Hexapod.dt * 1000 );
+			vTaskDelay( dt );
+			footDown = false;
+			xTaskNotifyGive(xWalkingTask);
+			xil_printf("L%d Down\r\n", id);
+		}
 	}
 }
 
-#endif // GEN_TEST_APP == 0
+#endif /* SRC_TASKFUNCTION_H_ */
