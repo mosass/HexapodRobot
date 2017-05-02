@@ -23,7 +23,11 @@ public:
 	}
 
 	static inline float toDeg(float rad){
-		return rad / M_PI * 180;
+		return rad / M_PI * 180.0f;
+	}
+
+	static inline float toReg(float deg){
+		return deg / 180.0f * M_PI;
 	}
 
 	inline Rot3d diff(const Rot3d& R){

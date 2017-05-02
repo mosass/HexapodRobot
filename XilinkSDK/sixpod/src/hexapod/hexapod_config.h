@@ -71,19 +71,19 @@
 /*
  * Hexapod configuration.
  */
-#define INITIAL_FOOTTIP_X		0
-#define INITIAL_FOOTTIP_Y		14
-#define INITIAL_FOOTTIP_Z		0
-#define INITIAL_FOOTTIP_Z_OFF	7
+#define INITIAL_FOOTTIP_X		(float)0
+#define INITIAL_FOOTTIP_Y		(float)14
+#define INITIAL_FOOTTIP_Z		(float)0
+#define INITIAL_FOOTTIP_Z_OFF	(float)7
 
-#define INITIAL_ROT_Y			0
-#define INITIAL_ROT_P			0
-#define INITIAL_ROT_R			0
+#define INITIAL_ROT_Y			(float)0
+#define INITIAL_ROT_P			(float)0
+#define INITIAL_ROT_R			(float)0
 
-#define INITIAL_STEP_TIME		5	// sec
-#define INITIAL_DT				0.2 // sec
+#define INITIAL_STEP_TIME		(float)5	// sec
+#define INITIAL_DT				(float)0.2 // sec
 
-#define ALLOW_ROT_ERROR 		1 	// +-deg
-#define SETUP_TIME				2   // sec
+#define ALLOW_ROT_ERROR 		(float)1 	// +-deg
+#define SETUP_TIME				(float)2   // sec
 
 #endif /* SRC_HEXAPOD_CONFIG_H_ */
