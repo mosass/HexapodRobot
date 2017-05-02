@@ -118,63 +118,198 @@ bool HEXAPOD::balance(){
 		s_re = 0;
 	}
 
-	if(s_ye != 0 && s_pe != 0 && s_re != 0){
+	if(s_ye == 0 && s_pe == 0 && s_re == 0){
 		return false;
 	}
 
 	//leg 1
-	x = footTip[0].x;
-	y = footTip[0].y;
-	z = footTip[0].z;
-	footTip[0].x = x - (H_YBODY + y)*s_ye - z*s_pe;
-	footTip[0].y = y + (H_XBODY + x)*s_ye + z*s_re;
-	footTip[0].z = z - (H_XBODY + x)*s_pe + (H_YBODY + y)*s_re;
+	if(targetFootTip[0].z == 0){
+		x = footTip[0].x;
+		y = footTip[0].y;
+		z = footTip[0].z;
+		footTip[0].x = x - (H_YBODY + y)*s_ye - z*s_pe;
+		footTip[0].y = y + (H_XBODY + x)*s_ye + z*s_re;
+		footTip[0].z = z - (H_XBODY + x)*s_pe + (H_YBODY + y)*s_re;
+	}
 
 	//leg 2
-	x = footTip[1].x;
-	y = footTip[1].y;
-	z = footTip[1].z;
-	footTip[1].x = x - (H_YBODY + y)*s_ye - z*s_pe;
-	footTip[1].y = y + (x)*s_ye + z*s_re;
-	footTip[1].z = z + (H_YBODY + y)*s_re;
+	if(targetFootTip[1].z == 0){
+		x = footTip[1].x;
+		y = footTip[1].y;
+		z = footTip[1].z;
+		footTip[1].x = x - (H_YBODY + y)*s_ye - z*s_pe;
+		footTip[1].y = y + (x)*s_ye + z*s_re;
+		footTip[1].z = z + (H_YBODY + y)*s_re;
+	}
 
 	//leg 3
-	x = footTip[2].x;
-	y = footTip[2].y;
-	z = footTip[2].z;
-	footTip[2].x = x - (H_YBODY + y)*s_ye - z*s_pe;
-	footTip[2].y = y - (H_XBODY - x)*s_ye + z*s_re;
-	footTip[2].z = z + (H_XBODY - x)*s_pe + (H_YBODY + y)*s_re;
+	if(targetFootTip[2].z == 0){
+		x = footTip[2].x;
+		y = footTip[2].y;
+		z = footTip[2].z;
+		footTip[2].x = x - (H_YBODY + y)*s_ye - z*s_pe;
+		footTip[2].y = y - (H_XBODY - x)*s_ye + z*s_re;
+		footTip[2].z = z + (H_XBODY - x)*s_pe + (H_YBODY + y)*s_re;
+	}
 
 	//leg 4
-	x = footTip[3].x;
-	y = footTip[3].y;
-	z = footTip[3].z;
-	footTip[3].x = x + (H_YBODY + y)*s_ye - z*s_pe;
-	footTip[3].y = y - (H_XBODY + x)*s_ye - z*s_re;
-	footTip[3].z = z - (H_XBODY + x)*s_pe - (H_YBODY + y)*s_re;
+	if(targetFootTip[3].z == 0){
+		x = footTip[3].x;
+		y = footTip[3].y;
+		z = footTip[3].z;
+		footTip[3].x = x + (H_YBODY + y)*s_ye - z*s_pe;
+		footTip[3].y = y - (H_XBODY + x)*s_ye - z*s_re;
+		footTip[3].z = z - (H_XBODY + x)*s_pe - (H_YBODY + y)*s_re;
+	}
 
 	//leg 5
-	x = footTip[4].x;
-	y = footTip[4].y;
-	z = footTip[4].z;
-	footTip[4].x = x + (H_YBODY + y)*s_ye - z*s_pe;
-	footTip[4].y = y - (x)*s_ye - z*s_re;
-	footTip[4].z = z - (H_YBODY + y)*s_re;
+	if(targetFootTip[4].z == 0){
+		x = footTip[4].x;
+		y = footTip[4].y;
+		z = footTip[4].z;
+		footTip[4].x = x + (H_YBODY + y)*s_ye - z*s_pe;
+		footTip[4].y = y - (x)*s_ye - z*s_re;
+		footTip[4].z = z - (H_YBODY + y)*s_re;
+	}
 
 	//leg 6
-	x = footTip[5].x;
-	y = footTip[5].y;
-	z = footTip[5].z;
-	footTip[5].x = x + (H_YBODY + y)*s_ye - z*s_pe;
-	footTip[5].y = y + (H_XBODY - x)*s_ye - z*s_re;
-	footTip[5].z = z + (H_XBODY - x)*s_pe - (H_YBODY + y)*s_re;
+	if(targetFootTip[5].z == 0){
+		x = footTip[5].x;
+		y = footTip[5].y;
+		z = footTip[5].z;
+		footTip[5].x = x + (H_YBODY + y)*s_ye - z*s_pe;
+		footTip[5].y = y + (H_XBODY - x)*s_ye - z*s_re;
+		footTip[5].z = z + (H_XBODY - x)*s_pe - (H_YBODY + y)*s_re;
+	}
+
+	for(int i = 0; i < 6; i++){
+		if(targetFootTip[i].z == 0){
+			if(footTip[i].x > targetFootTip[i].x + 3.0)
+				footTip[i].x = targetFootTip[i].x + 3.0;
+			else if(footTip[i].x < targetFootTip[i].x - 3.0)
+				footTip[i].x = targetFootTip[i].x - 3.0;
+
+			if(footTip[i].y > targetFootTip[i].y + 3.0)
+				footTip[i].y = targetFootTip[i].y + 3.0;
+			else if(footTip[i].y < targetFootTip[i].y - 3.0)
+				footTip[i].y = targetFootTip[i].y - 3.0;
+
+			if(footTip[i].z > targetFootTip[i].z + 3.0)
+				footTip[i].z = targetFootTip[i].z + 3.0;
+			else if(footTip[i].z < targetFootTip[i].z - 3.0)
+				footTip[i].z = targetFootTip[i].z - 3.0;
+		}
+	}
 
 	return true;
 }
 
+void HEXAPOD::applyRotToGait(int legId, Trajectory3d& traj){
+	float x, y, z;
+	float s_ye = sin(0 - bodyRotTarget.y);
+	float s_pe = sin(0 - bodyRotTarget.p);
+	float s_re = sin(0 - bodyRotTarget.r);
+
+	Rot3d zero(0, 0, 0);
+	Rot3d error = zero.diff(bodyRotTarget);
+
+	if(Rot3d::toDeg(error.y) < ALLOW_ROT_ERROR || !this->improveYaw){
+		s_ye = 0;
+	}
+
+	if(Rot3d::toDeg(error.p) < ALLOW_ROT_ERROR || !this->improvePitch){
+		s_pe = 0;
+	}
+
+	if(Rot3d::toDeg(error.r) < ALLOW_ROT_ERROR || !this->improveRoll){
+		s_re = 0;
+	}
+
+	if(s_ye == 0 && s_pe == 0 && s_re == 0){
+		return;
+	}
+
+	if(legId == 0){
+		legId = 1;
+	}
+
+	x = traj.x;
+	y = traj.y;
+	z = traj.z;
+
+
+	//leg 1
+	switch(legId){
+	case 1: {
+		traj.x = x - (H_YBODY + y)*s_ye - z*s_pe;
+		traj.y = y + (H_XBODY + x)*s_ye + z*s_re;
+		traj.z = z - (H_XBODY + x)*s_pe + (H_YBODY + y)*s_re;
+		break;
+	}
+	case 2: {
+		traj.x = x - (H_YBODY + y)*s_ye - z*s_pe;
+		traj.y = y + (x)*s_ye + z*s_re;
+		traj.z = z + (H_YBODY + y)*s_re;
+		break;
+	}
+	case 3: {
+		traj.x = x - (H_YBODY + y)*s_ye - z*s_pe;
+		traj.y = y - (H_XBODY - x)*s_ye + z*s_re;
+		traj.z = z + (H_XBODY - x)*s_pe + (H_YBODY + y)*s_re;
+		break;
+	}
+	case 4: {
+		traj.x = x + (H_YBODY + y)*s_ye - z*s_pe;
+		traj.y = y - (H_XBODY + x)*s_ye - z*s_re;
+		traj.z = z - (H_XBODY + x)*s_pe - (H_YBODY + y)*s_re;
+		break;
+	}
+	case 5: {
+		traj.x = x + (H_YBODY + y)*s_ye - z*s_pe;
+		traj.y = y - (x)*s_ye - z*s_re;
+		traj.z = z - (H_YBODY + y)*s_re;
+		break;
+	}
+	case 6: {
+		traj.x = x + (H_YBODY + y)*s_ye - z*s_pe;
+		traj.y = y + (H_XBODY - x)*s_ye - z*s_re;
+		traj.z = z + (H_XBODY - x)*s_pe - (H_YBODY + y)*s_re;
+		break;
+	}
+	default :
+		break;
+	}
+}
+
+void HEXAPOD::updateGoalPosition(){
+	for(int i = 0; i < 6; i++){
+		this->leg[i].setGoalPosition(this->footTip[i]);
+	}
+}
+
 void HEXAPOD::moving(){
 	for(int i = 0; i < 6; i++){
+		if(this->footTip[i].x > 7.0){
+			this->footTip[i].x = 7.0;
+		}
+		else if(this->footTip[i].x < -7.0){
+			this->footTip[i].x = -7.0;
+		}
+
+		if(this->footTip[i].y > 18.0){
+			this->footTip[i].y = 18.0;
+		}
+		else if(this->footTip[i].y < 7.0){
+			this->footTip[i].y = 7.0;
+		}
+
+		if(this->footTip[i].z > this->leg[i].zOffset){
+			this->footTip[i].z = this->leg[i].zOffset;
+		}
+		else if(this->footTip[i].z < -10.0){
+			this->footTip[i].z = -10.0;
+		}
+
 		this->leg[i].moveTo(this->footTip[i], this->dt);
 	}
 	return;
