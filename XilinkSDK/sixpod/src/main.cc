@@ -5,20 +5,7 @@
 #define GEN_TEST_APP  0
 
 /* FreeRTOS includes. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "timers.h"
-/* Xilinx includes. */
-#include "stdint.h"
-#include "stdio.h"
-#include "xil_printf.h"
-#include "xparameters.h"
-#include "sleep.h"
-#include "xstatus.h"
-#include "netif/xadapter.h"
-#include "lwip/sockets.h"
-#include "lwipopts.h"
+#include "platform.h"
 
 #if GEN_TEST_APP == 1
 #include "testApp.h"
@@ -58,7 +45,7 @@ int main (void) {
 				( const char * ) "init", 	/* Text name for the task, provided to assist debugging only. */
 				configMINIMAL_STACK_SIZE, 	/* The stack allocated to the task. */
 				NULL, 						/* The task parameter is not used, so set to NULL. */
-				tskIDLE_PRIORITY,			/* The task runs at the idle priority. */
+				DEFAULT_THREAD_PRIO,			/* The task runs at the idle priority. */
 				&xInitTask );
 
 	if(status != pdPASS){
@@ -80,44 +67,58 @@ static void init( void *pvParameters ) {
 
 	xil_printf("Initial Network\r\n");
 	/* initialize lwIP before calling sys_thread_new */
-	lwip_init();
+//	lwip_init();
 
 	/* any thread using lwIP should be created using sys_thread_new */
-	sys_thread_new("NW_THRD", network_thread, NULL,
-			THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
+//	sys_thread_new("NW_THRD", network_thread, NULL,
+//			THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 
-	TickType_t st = pdMS_TO_TICKS( 5000 );
+	TickType_t st = pdMS_TO_TICKS( 3000 );
 	vTaskDelay( st );
 	xil_printf("Initialed Network\r\n");
-
-	status = xTaskCreate( hexapodWalkingTask,
-				 ( const char * ) "Walking",
-				 configMINIMAL_STACK_SIZE,
-				 NULL,
-//				 tskIDLE_PRIORITY,
-				 DEFAULT_THREAD_PRIO,
-				 &xWalkingTask );
-
-	if(status != pdPASS){
-		xil_printf("Can not create Walking task.\r\n");
-	}
 
 	status = xTaskCreate( hexapodMovingTask,
 				 ( const char * ) "Moving",
 				 configMINIMAL_STACK_SIZE,
 				 NULL,
-				 DEFAULT_THREAD_PRIO + 1,
+				 DEFAULT_THREAD_PRIO,
 				 &xMovingTask );
 
 	if(status != pdPASS){
 		xil_printf("Can not create Moving task.\r\n");
 	}
 
+	const char * taskName[6] = {
+			"Leg1Gait",
+			"Leg2Gait",
+			"Leg3Gait",
+			"Leg4Gait",
+			"Leg5Gait",
+			"Leg6Gait"
+	};
+
+	for(int i = 0; i < 6; i++){
+		xQueueReset(xTrajQueue[i]);
+		xTaskCreate( hexapodLegGaitTask,
+					taskName[i], configMINIMAL_STACK_SIZE,
+					(void *) i, DEFAULT_THREAD_PRIO, &xLegGait[i] );
+	}
+
+	status = xTaskCreate( hexapodWalkingTask,
+				 ( const char * ) "Walking",
+				 configMINIMAL_STACK_SIZE,
+				 NULL,
+				 DEFAULT_THREAD_PRIO + 1,
+				 &xWalkingTask );
+
+	if(status != pdPASS){
+		xil_printf("Can not create Walking task.\r\n");
+	}
+
 	xil_printf("Initialed\r\n");
 	vTaskDelete(NULL);
 	for(;;);
 }
-
 
 #endif //else if GEN_TEST_APP == 0
 
