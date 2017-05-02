@@ -91,8 +91,8 @@ float JointGetPresentPositionDeg(int Id){
  * Set moving speed
  */
 void JointSetMovingSpeed(int Id, int Speed) {
-	if(Speed == 0)
-		Speed = 1;
+	if(Speed < 20)
+		Speed = 20;
 
 	CommPortWriteWord(Id, MOVING_SPEED, Speed);
 	return;
@@ -102,7 +102,7 @@ void JointSetMovingSpeed(int Id, int Speed) {
  * Set moving speed in degree per second.
  */
 void JointSetMovingSpeedDeg(int Id, float DegPerSec) {
-	int speed = (int) ((DegPerSec * 60) / (360 * 0.111));
+	int speed = (int) ((DegPerSec * 60.0f) / (360.0f * 0.111f));
 	JointSetMovingSpeed(Id, speed);
 	return;
 }

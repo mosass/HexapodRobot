@@ -13,10 +13,10 @@
 #include "leg.h"
 
 inline float toDeg(float rad){
-	return ((rad) / M_PI) * 180;
+	return ((rad) / M_PI) * 180.0f;
 }
 
-void Leg::setup(int Id = 0, float z_off = 0){
+void Leg::setup(int Id = 0, float z_off = INITIAL_FOOTTIP_Z_OFF){
 	this->id = Id;
 //	this->footTipPos = FootTip();
 	this->invX = false;
@@ -90,29 +90,40 @@ void Leg::setup(int Id = 0, float z_off = 0){
 	}
 }
 
-void Leg::move(){
-	JointSetMovingSpeedDeg(this->jointIdA, this->linkSpeed.a);
-	JointSetMovingSpeedDeg(this->jointIdB, this->linkSpeed.b);
-	JointSetMovingSpeedDeg(this->jointIdC, this->linkSpeed.c);
+void Leg::move(bool skipSetSpeed = false){
+	if(!skipSetSpeed){
+		JointSetMovingSpeedDeg(this->jointIdA, this->linkSpeed.a);
+		JointSetMovingSpeedDeg(this->jointIdB, this->linkSpeed.b);
+		JointSetMovingSpeedDeg(this->jointIdC, this->linkSpeed.c);
+	}
 
 	if(this->invA)
-		JointSetGoalPositionDeg(this->jointIdA, 300 - this->linkPos.a);
+		JointSetGoalPositionDeg(this->jointIdA, 300.0f - this->linkPos.a);
 	else
 		JointSetGoalPositionDeg(this->jointIdA, this->linkPos.a);
 
 	if(this->invB)
-		JointSetGoalPositionDeg(this->jointIdB, 300 - this->linkPos.b);
+		JointSetGoalPositionDeg(this->jointIdB, 300.0f - this->linkPos.b);
 	else
 		JointSetGoalPositionDeg(this->jointIdB, this->linkPos.b);
 
 	if(this->invC)
-		JointSetGoalPositionDeg(this->jointIdC, 300 - this->linkPos.c);
+		JointSetGoalPositionDeg(this->jointIdC, 300.0f - this->linkPos.c);
 	else
 		JointSetGoalPositionDeg(this->jointIdC, this->linkPos.c);
 
 	return;
 }
 
+void Leg::setGoalPosition(FootTip& targetFootTipPos){
+	this->footTipPos = targetFootTipPos;
+	this->linkPos = this->calcIk();
+	this->move(true); //ignore speed
+	return;
+}
+
+/* **Only call this function when Motor is stationary.
+ * because this function returned the wrong value if Motor is moving */
 Link3d Leg::getPresentPosition(){
 	Link3d pos;
 	pos.a = JointGetPresentPositionDeg(this->jointIdA);
@@ -120,28 +131,19 @@ Link3d Leg::getPresentPosition(){
 	pos.c = JointGetPresentPositionDeg(this->jointIdC);
 
 	if(this->invA)
-		pos.a = 300 - pos.a;
+		pos.a = 300.0f - pos.a;
 
 	if(this->invB)
-		pos.b = 300 - pos.b;
+		pos.b = 300.0f - pos.b;
 
 	if(this->invC)
-		pos.c = 300 - pos.c;
+		pos.c = 300.0f - pos.c;
 
 	return pos;
 }
 
-void Leg::moveTo(Link3d& targetJointPos, float in_sec){
-	Link3d currentJointPos = this->getPresentPosition();
-//	this->linkPos = this->calcFk();
-	this->linkPos = targetJointPos;
-	this->linkSpeed = targetJointPos.diff(currentJointPos) / in_sec;
-	this->move();
-	return;
-}
-
 void Leg::moveTo(FootTip& targetFootTipPos, float in_sec){
-	Link3d currentJointPos = this->getPresentPosition();
+	Link3d currentJointPos = this->linkPos;
 	this->footTipPos = targetFootTipPos;
 	this->linkPos = this->calcIk();
 	this->linkSpeed = this->linkPos.diff(currentJointPos) / in_sec;
@@ -161,11 +163,11 @@ Link3d Leg::calcIk(){
 
 	Link3d result;
 
-	result.a = 150.0 + toDeg(atan(x/y));
+	result.a = 150.0f + toDeg(atan(x/y));
 	float L1 = sqrt(x*x + y*y);
 	float L = sqrt((L1 - C)*(L1 - C) + (z_off - z)*(z_off - z));
-	result.b = 150.0 + toDeg(acos((F*F + L*L - T*T)/(2*L*F)) - atan((z_off - z)/(L1 - C)));
-	result.c = 90.0 + toDeg(acos((T*T + F*F - L*L)/(2*T*F)) - M_PI_2);
+	result.b = 150.0f + toDeg(acos((F*F + L*L - T*T)/(2*L*F)) - atan((z_off - z)/(L1 - C)));
+	result.c = 90.0f + toDeg(acos((T*T + F*F - L*L)/(2*T*F)) - M_PI_2);
 
 	return result;
 }

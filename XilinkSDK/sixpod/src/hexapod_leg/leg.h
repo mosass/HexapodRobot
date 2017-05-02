@@ -21,7 +21,7 @@ private:
 	Link3d	linkSpeed;
 
 	Link3d calcIk();
-	void move();
+	void move(bool skipSetSpeed);
 public:
 	uint8_t id;
 	float zOffset;
@@ -33,8 +33,8 @@ public:
 	bool invC;
 
 	void setup(int Id, float z_off);
+	void setGoalPosition(FootTip& targetFootTipPos);
 	Link3d getPresentPosition();
-	void moveTo(Link3d& targetJointPos, float in_sec);
 	void moveTo(FootTip& targetFootTipPos, float in_sec);
 };
 
