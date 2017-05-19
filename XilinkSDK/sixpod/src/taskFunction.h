@@ -30,7 +30,7 @@ static void hexapodMovingTask( void *pvParameters ){
 				// balance mode
 				if(Hexapod.balance()){
 					xil_printf("B\r\n");
-					Hexapod.updateGoalPosition();
+//					Hexapod.updateGoalPosition();
 				}
 			}
 			vTaskDelay( dt );
@@ -39,10 +39,10 @@ static void hexapodMovingTask( void *pvParameters ){
 }
 
 static void hexapodWalkingTask( void *pvParameters ){
-//	for(;;){
-//		TickType_t dt = pdMS_TO_TICKS( Hexapod.stepTime * 1000 );
-//		vTaskDelay( dt );
-//	}
+	for(;;){
+		TickType_t dt = pdMS_TO_TICKS( Hexapod.stepTime * 1000 );
+		vTaskDelay( dt );
+	}
 
 	Trajectory3d tp1 = {-5, 14.0, 0, 0.5};
 	Trajectory3d tp2 = {0, 14.0, 4, 0.25};
@@ -53,7 +53,7 @@ static void hexapodWalkingTask( void *pvParameters ){
 
 	Hexapod.stepTime = 4;
 	Hexapod.dt = 0.5;
-	Hexapod.bodyRotTarget.p = Rot3d::toReg(5.0);
+//	Hexapod.bodyRotTarget.p = Rot3d::toReg(5.0);
 	Hexapod.improvePitch = true;
 	Hexapod.improveRoll = true;
 	Hexapod.improveYaw = true;
@@ -108,6 +108,10 @@ static void hexapodWalkingTask( void *pvParameters ){
 	}
 }
 
+//static void hexapodLegGaitTask( void *pvParameters ){
+//
+//}
+
 static void hexapodLegGaitTask( void *pvParameters ){
 	int id = (uint32_t) pvParameters;
 	int legId = id + 1;
@@ -123,10 +127,10 @@ static void hexapodLegGaitTask( void *pvParameters ){
 		}
 		oldTargetPos = targetPos;
 
-		Hexapod.applyRotToGait(legId, targetPos);
-
-		FootTip new_pos(targetPos.x, targetPos.y, targetPos.z);
-		Hexapod.targetFootTip[id] = new_pos;
+//		FootTip new_pos =
+//
+//		FootTip new_pos(targetPos.x, targetPos.y, targetPos.z);
+		Hexapod.targetFootTip[id] = Hexapod.applyRotToGait(legId, targetPos);
 
 		Hexapod.footTip[id] = Hexapod.targetFootTip[id];
 

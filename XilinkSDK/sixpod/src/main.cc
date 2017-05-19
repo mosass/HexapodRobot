@@ -67,11 +67,11 @@ static void init( void *pvParameters ) {
 
 	xil_printf("Initial Network\r\n");
 	/* initialize lwIP before calling sys_thread_new */
-//	lwip_init();
+	lwip_init();
 
 	/* any thread using lwIP should be created using sys_thread_new */
-//	sys_thread_new("NW_THRD", network_thread, NULL,
-//			THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
+	sys_thread_new("NW_THRD", network_thread, NULL,
+			THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 
 	TickType_t st = pdMS_TO_TICKS( 3000 );
 	vTaskDelay( st );

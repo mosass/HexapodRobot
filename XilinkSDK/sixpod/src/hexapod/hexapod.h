@@ -47,7 +47,7 @@ public:
 	bool balance();
 	void moving();
 
-	void applyRotToGait(int legId, Trajectory3d& Traj);
+	FootTip applyRotToGait(int legId, Trajectory3d& traj);
 	void updateGoalPosition();
 };
 

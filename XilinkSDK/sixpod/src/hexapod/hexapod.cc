@@ -204,7 +204,8 @@ bool HEXAPOD::balance(){
 	return true;
 }
 
-void HEXAPOD::applyRotToGait(int legId, Trajectory3d& traj){
+FootTip HEXAPOD::applyRotToGait(int legId, Trajectory3d& traj){
+	FootTip result(traj.x, traj.y, traj.z);
 	float x, y, z;
 	float s_ye = sin(0 - bodyRotTarget.y);
 	float s_pe = sin(0 - bodyRotTarget.p);
@@ -226,7 +227,7 @@ void HEXAPOD::applyRotToGait(int legId, Trajectory3d& traj){
 	}
 
 	if(s_ye == 0 && s_pe == 0 && s_re == 0){
-		return;
+		return result;
 	}
 
 	if(legId == 0){
@@ -237,48 +238,49 @@ void HEXAPOD::applyRotToGait(int legId, Trajectory3d& traj){
 	y = traj.y;
 	z = traj.z;
 
-
 	//leg 1
 	switch(legId){
 	case 1: {
-		traj.x = x - (H_YBODY + y)*s_ye - z*s_pe;
-		traj.y = y + (H_XBODY + x)*s_ye + z*s_re;
-		traj.z = z - (H_XBODY + x)*s_pe + (H_YBODY + y)*s_re;
+		result.x = x - (H_YBODY + y)*s_ye - z*s_pe;
+		result.y = y + (H_XBODY + x)*s_ye + z*s_re;
+		result.z = z - (H_XBODY + x)*s_pe + (H_YBODY + y)*s_re;
 		break;
 	}
 	case 2: {
-		traj.x = x - (H_YBODY + y)*s_ye - z*s_pe;
-		traj.y = y + (x)*s_ye + z*s_re;
-		traj.z = z + (H_YBODY + y)*s_re;
+		result.x = x - (H_YBODY + y)*s_ye - z*s_pe;
+		result.y = y + (x)*s_ye + z*s_re;
+		result.z = z + (H_YBODY + y)*s_re;
 		break;
 	}
 	case 3: {
-		traj.x = x - (H_YBODY + y)*s_ye - z*s_pe;
-		traj.y = y - (H_XBODY - x)*s_ye + z*s_re;
-		traj.z = z + (H_XBODY - x)*s_pe + (H_YBODY + y)*s_re;
+		result.x = x - (H_YBODY + y)*s_ye - z*s_pe;
+		result.y = y - (H_XBODY - x)*s_ye + z*s_re;
+		result.z = z + (H_XBODY - x)*s_pe + (H_YBODY + y)*s_re;
 		break;
 	}
 	case 4: {
-		traj.x = x + (H_YBODY + y)*s_ye - z*s_pe;
-		traj.y = y - (H_XBODY + x)*s_ye - z*s_re;
-		traj.z = z - (H_XBODY + x)*s_pe - (H_YBODY + y)*s_re;
+		result.x = x + (H_YBODY + y)*s_ye - z*s_pe;
+		result.y = y - (H_XBODY + x)*s_ye - z*s_re;
+		result.z = z - (H_XBODY + x)*s_pe - (H_YBODY + y)*s_re;
 		break;
 	}
 	case 5: {
-		traj.x = x + (H_YBODY + y)*s_ye - z*s_pe;
-		traj.y = y - (x)*s_ye - z*s_re;
-		traj.z = z - (H_YBODY + y)*s_re;
+		result.x = x + (H_YBODY + y)*s_ye - z*s_pe;
+		result.y = y - (x)*s_ye - z*s_re;
+		result.z = z - (H_YBODY + y)*s_re;
 		break;
 	}
 	case 6: {
-		traj.x = x + (H_YBODY + y)*s_ye - z*s_pe;
-		traj.y = y + (H_XBODY - x)*s_ye - z*s_re;
-		traj.z = z + (H_XBODY - x)*s_pe - (H_YBODY + y)*s_re;
+		result.x = x + (H_YBODY + y)*s_ye - z*s_pe;
+		result.y = y + (H_XBODY - x)*s_ye - z*s_re;
+		result.z = z + (H_XBODY - x)*s_pe - (H_YBODY + y)*s_re;
 		break;
 	}
 	default :
 		break;
 	}
+
+	return result;
 }
 
 void HEXAPOD::updateGoalPosition(){

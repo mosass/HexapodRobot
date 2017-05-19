@@ -166,8 +166,8 @@ Link3d Leg::calcIk(){
 	result.a = 150.0f + toDeg(atan(x/y));
 	float L1 = sqrt(x*x + y*y);
 	float L = sqrt((L1 - C)*(L1 - C) + (z_off - z)*(z_off - z));
-	result.b = 150.0f + toDeg(acos((F*F + L*L - T*T)/(2*L*F)) - atan((z_off - z)/(L1 - C)));
-	result.c = 90.0f + toDeg(acos((T*T + F*F - L*L)/(2*T*F)) - M_PI_2);
+	result.b = 165.0f + toDeg(acos((F*F + L*L - T*T)/(2*L*F)) - atan((z_off - z)/(L1 - C)));
+	result.c = 92.0f + toDeg(acos((T*T + F*F - L*L)/(2*T*F)) - M_PI_2);
 
 	return result;
 }

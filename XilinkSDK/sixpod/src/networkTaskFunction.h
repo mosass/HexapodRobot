@@ -64,6 +64,11 @@ void process_request(void *p)
 				Hexapod.bodyRotTarget.r = val;
 				i += 5;
 				break;
+			case 's':
+				val = *((float *) &recv_buf[i+1]);
+				Hexapod.stepTime = val;
+				i += 5;
+				break;
 			}
 		}
 	}
